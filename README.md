@@ -24,11 +24,12 @@ or just
 After you must build the python container with the next command (don't forget the "." at the end of the command) :
 
 ```bash
-  docker build -t sneakerwolf .
+  docker build -t sneakerwolf --rm .
 ```
 
 and launch it with :
 
 ```bash
+  docker run -it --name sneakerwolf --rm sneakerwolf
   docker run sneakerwolf
 ```
