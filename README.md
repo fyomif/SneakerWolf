@@ -21,6 +21,15 @@ or just
   docker-compose up -d
 ```
 
+
+Get your ipV4 address or your WSL ipv4 address(if you have Windows like OS) with :
+
+```bash
+  ipconfig
+```
+
+Change host value in the app/helper/.env file by your ipv4 address 
+
 After you must build the python container with the next command (don't forget the "." at the end of the command) :
 
 ```bash
