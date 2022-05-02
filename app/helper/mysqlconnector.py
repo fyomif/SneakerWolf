@@ -13,7 +13,6 @@ def connect():
             password='password',
             port='3306'
         )
-
         return conn
     except(Exception, Error) as error:
         print(error)

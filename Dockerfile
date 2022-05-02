@@ -1,6 +1,6 @@
 
 FROM python:3.10
-RUN mkdir /app
+#RUN mkdir /app
 #WORKDIR "/app"
 
 # Upgrade pip
@@ -12,6 +12,9 @@ RUN apt-get update \
 
 ADD app/requirements.txt /app/
 ADD app/main.py /app/
+
+ADD app/classes app/classes/
+ADD app/helper app/helper/
 
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
