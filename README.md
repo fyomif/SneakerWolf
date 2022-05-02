@@ -24,7 +24,7 @@ or just
 After you must build the python container with the next command (don't forget the "." at the end of the command) :
 
 ```bash
-  docker build -t sneakerwolf.
+  docker build -t sneakerwolf .
 ```
 
 and launch it with :
