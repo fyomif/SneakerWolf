@@ -31,5 +31,4 @@ and launch it with :
 
 ```bash
   docker run -it --name sneakerwolf --rm sneakerwolf
-  docker run sneakerwolf
 ```
