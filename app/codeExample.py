@@ -1,10 +1,11 @@
+from pickle import TRUE
 from venv import create
 import mysql.connector
 import datetime
 
 cnx = mysql.connector.connect(user='admin', password='password',
                             host='127.0.0.1',
-                            database='northwind')
+                            database='northwind3')
 
 cursor = cnx.cursor()
 
@@ -331,23 +332,17 @@ def subscribeUser(Name, Surname, billing_add_Street,billing_add_Number, billing_
 def createDetail(quantity, price, To__ID):
 
     cursor = cnx.cursor()
-
-
     
     query0 = ("INSERT INTO Detail"
-               "(ID, Quantity, Price, To__ID, Cart)"
-               "VALUES (%(ID)s, %(Quantity)s, %(Price)s, %(To__ID)s, %(Cart)s)")
-
-    ID = cursor.lastrowid
+               "(Quantity, Price, To__ID, Cart)"
+               "VALUES (%(Quantity)s, %(Price)s, %(To__ID)s, %(Cart)s)")
 
     data_detail = {
-    'ID': ID,
     'Quantity': quantity,
     'Price': price,
     'To__ID' : To__ID,
     'Cart' : 1,
     }
-
     cursor.execute(query0, data_detail)
 
     ID = cursor.lastrowid
@@ -376,7 +371,7 @@ def createDetail(quantity, price, To__ID):
 
     cnx.close()
 
-createDetail(0, 0, 3)
+#createDetail(0, 0, 3)
 
 
 def createCart(detailId):
@@ -459,3 +454,54 @@ for (first_name, last_name, hire_date) in cursor:
   print("{}, {} was hired on {:%d %b %Y}".format(
     last_name, first_name, hire_date))
 """
+
+def subscribeUser(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, VIP = 0):
+
+
+    """needs to generate foreign key before so it first creates a cart, assigns it to a created user and then puts it in the customer table"""
+    cursor = cnx.cursor()
+   
+    query = ("INSERT INTO User "
+                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer) "
+                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s)")
+
+    # Insert salary information
+    # if (customerBool == False):
+    data_user = {
+    'Name': Name,
+    'Surname': Surname,
+    'billing_add_Street': billing_add_Street,
+    'billing_add_Number': billing_add_Number,
+    'billing_add_Postal_code': billing_add_Postal_code,
+    'billing_add_City': billing_add_City,
+    'billing_add_Country': billing_add_Country,
+    'delivery_add_Street': delivery_add_Street,
+    'delivery_add_Number': delivery_add_Number,
+    'delivery_add_Postal_code': delivery_add_Postal_code,
+    'delivery_add_City': delivery_add_City,
+    'delivery_add_Country': delivery_add_Country,
+    'Customer' : 1,
+    }
+
+    cursor.execute(query, data_user)
+    ID_user = cursor.lastrowid
+
+    query1 = ("INSERT INTO Customer"
+               "(U_C_ID, VIP)"
+               "VALUES (%(U_C_ID)s,  %(VIP)s)")
+
+    data_user1 = {
+    'U_C_ID': ID_user,
+    'VIP': VIP,
+    }
+
+    cursor.execute(query1, data_user1)
+
+    # Make sure data is committed to the database
+    cnx.commit()
+
+    cursor.close()
+
+    cnx.close()
+
+subscribeUser("barack", "obama", "white house", "1", "1000", "Washington DC", "USA", "white house", "1", "1000", "Washington DC", "USA", 1)
