@@ -324,29 +324,7 @@ def createDetail(quantity, price, To__ID):
 #createDetail(0, 0, 3)
 
 
-def createCart(detailId):
 
-    cursor = cnx.cursor()
-    
-    query0 = ("INSERT INTO Cart"
-               "(ID, D_C_ID)"
-               "VALUES (%(ID)s, %(D_C_ID)s)")
-
-    ID = cursor.lastrowid
-
-    data_detail = {
-    'ID': ID,
-    'D_C_ID' : detailId,
-    }
-
-    cursor.execute(query0, data_detail)
-
-    # Make sure data is committed to the database
-    cnx.commit()
-
-    cursor.close()
-
-    cnx.close()
 
 
 #createCart(0)
@@ -447,6 +425,80 @@ def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, bill
 ##subscribeCustomer("barack", "obama", "white house", "1", "1000", "Washington DC", "USA", "white house", "1", "1000", "Washington DC", "USA", 1)
 
 
+def createCart(detailId, userID, commitVal):
+
+    cursor = cnx.cursor()
+    
+    query0 = ("INSERT INTO Cart_Detail"
+               "(D_C_ID, To__ID)"
+               "VALUES (%(D_C_ID)s, %(To__ID)s)")
+
+    ID = cursor.lastrowid
+
+    data_cart = {
+    'D_C_ID' : detailId,
+    'To__ID' : userID,
+    }
+
+    cursor.execute(query0, data_cart)
+
+    # Make sure data is committed to the database
+
+    if commitVal == True:
+
+        cnx.commit()
+
+        cursor.close()
+
+        cnx.close()
+
+
+
+def addShoeToCart(quantity, price, to__specification, userID):
+    cursor = cnx.cursor()
+
+
+    #adds a row into detial
+    set_detail = ("INSERT INTO Detail "
+                "(Quantity, Price, To__ID, Cart_Detail) "
+                "VALUES (%(Quantity)s, %(Price)s, %(To__ID)s, %(Cart_Detail)s)")
+
+ 
+    # Insert Sport information
+    data_detail = {
+    'Quantity' :quantity,
+    'Price' : price,
+    'To__ID' : to__specification,
+    'Cart_Detail' : 1,
+    }
+    #puts the information into the row
+    cursor.execute(set_detail, data_detail)
+    #sets the integer of the last row of the last table it was inserted to
+    ID_detail = cursor.lastrowid
+
+
+    #adds the detail created to a cart detail
+    #userID is int of user placing in cart
+    #ID_detail is the last row int of the detail table
+    #Last boolean is to determin if the function is called by itself or in combination to deactivate the premature commits
+    createCart(ID_detail, userID, False)
+
+    #adds the cart detail to the user
+
+
+
+    # data is committed to the database
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+
+
+##addShoeToCart(1, 130, 1)
+
+
+
+
+
 """
 Get all shoes in models
 """
@@ -517,4 +569,5 @@ def getShoesBySport(wantedSport):
     #for result in myresult:
     print(myresult)
 
-getShoesBySport("running")
+#getShoesBySport("running")
+
