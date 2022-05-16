@@ -238,16 +238,6 @@ def setLineBrand():
 
 
 
-def getShoes():
-
-    cursor = cnx.cursor()
-
-    cursor.execute("""SELECT * FROM Specification""")
-
-    myresult = cursor.fetchone()
-
-    print(myresult)
-
 
 def getShoesSize():
     cursor = cnx.cursor()
@@ -282,50 +272,10 @@ def getModelsBySize():
                             FROM Specification)))"""
 
     myresult = cursor.fetchall()
+    for i in myresult:
+        print(i)
 
 
-    print(myresult)
-
-
-
-def subscribeUser(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delievery_add_Street ,delievery_add_Number, delievery_add_Postal_code, delievery_add_City, delievery_add_Country):
-
-
-    """needs to generate foreign key before so it first creates a cart, assigns it to a created user and then puts it in the customer table"""
-    cursor = cnx.cursor()
-
-    query0 = ("INSERT INTO Detail"
-               "(ID, Quantity, Price, To__ID"
-               "Values (%(ID)s, %(Quantity)s, %(Price)s, %(To__ID)s")
-
-    query1 = ("INSERT INTO Cart"
-              "(ID)")
-
-   
-    query2 = ("INSERT INTO User "
-                "(ID,To__ID, Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delievery_add_Street,delievery_add_Number, delievery_add_Postal_code, delievery_add_City, delievery_add_Country) "
-                "VALUES (%(ID)s,%(To__ID)s, %(Name)s,%(To__Name)s, %(To__ID)s, %(To__Name_1)s)")
-
-    ID = cursor.lastrowid
-
-    # Insert salary information
-    # if (customerBool == False):
-    data_salary = {
-    'ID': ID,
-    'Name': modelString,
-    'To__Name': IdCategorie,
-    'To__ID': IdLine,
-    'To__Name_1': IdNameLine,
-    }
-
-    cursor.execute(set_salary, data_salary)
-
-    # Make sure data is committed to the database
-    cnx.commit()
-
-    cursor.close()
-
-    cnx.close()
 
 
 
@@ -442,20 +392,10 @@ def setSport(sportString):
 
 
 """
-query = ("SELECT first_name, last_name, hire_date FROM employees "
-         "WHERE hire_date BETWEEN %s AND %s")
-
-hire_start = datetime.date(1999, 1, 1)
-hire_end = datetime.date(1999, 12, 31)
-
-cursor.execute(query, (hire_start, hire_end))
-
-for (first_name, last_name, hire_date) in cursor:
-  print("{}, {} was hired on {:%d %b %Y}".format(
-    last_name, first_name, hire_date))
+CREATE A CUSTOMER
 """
 
-def subscribeUser(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, VIP = 0):
+def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, VIP = 0):
 
 
     """needs to generate foreign key before so it first creates a cart, assigns it to a created user and then puts it in the customer table"""
@@ -504,4 +444,77 @@ def subscribeUser(Name, Surname, billing_add_Street,billing_add_Number, billing_
 
     cnx.close()
 
-subscribeUser("barack", "obama", "white house", "1", "1000", "Washington DC", "USA", "white house", "1", "1000", "Washington DC", "USA", 1)
+##subscribeCustomer("barack", "obama", "white house", "1", "1000", "Washington DC", "USA", "white house", "1", "1000", "Washington DC", "USA", 1)
+
+
+"""
+Get all shoes in models
+"""
+
+def getShoesBySex(wantedS):
+
+    cursor = cnx.cursor()
+
+    cursor.execute("""SELECT * FROM Model""")
+
+    myresult = cursor.fetchall()
+
+    print(myresult)
+
+
+"""
+Get all shoes by sex
+"""
+
+def getShoesBySex(wantedS):
+
+    cursor = cnx.cursor()
+
+    query = """SELECT * FROM Model
+                WHERE To__Name = '%s'""" % wantedS 
+                    
+    cursor.execute(query)
+
+    myresult = cursor.fetchall()
+
+    print(myresult)
+
+
+#getShoesBySex("men")
+#getShoesBySex("unisex")
+
+def getShoesByBrand(wantedBrand):
+    
+    cursor = cnx.cursor()
+
+    query = """SELECT * FROM Model
+                WHERE To__Name_1 IN (SELECT Name FROM Line
+                                    WHERE ID IN (SELECT ID FROM Brand
+                                                WHERE Name = '%s'))""" % wantedBrand
+
+    cursor.execute(query)
+
+    myresult = cursor.fetchone()
+
+    #for result in myresult:
+    print(myresult)
+
+#getShoesByBrand("asics")
+
+
+def getShoesBySport(wantedSport):
+    cursor = cnx.cursor()
+
+    query = """SELECT * FROM Model
+                WHERE To__Name_1 IN (SELECT Name FROM Line
+                                    WHERE To__ID IN (SELECT ID FROM Sport
+                                                WHERE Name = '%s'))""" % wantedSport
+
+    cursor.execute(query)
+
+    myresult = cursor.fetchone()
+
+    #for result in myresult:
+    print(myresult)
+
+getShoesBySport("running")
