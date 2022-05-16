@@ -3,15 +3,14 @@
 -- *--------------------------------------------
 -- * DB-MAIN version: 11.0.2              
 -- * Generator date: Sep 14 2021              
--- * Generation date: Fri Apr 29 14:19:00 2022 
--- * LUN file: C:\Users\benny\DbMain work\Sneaker_Wolf_update__v3_1.lun 
--- * Schema: Schema Physique/1-1 
+-- * Generation date: Mon May 16 14:37:55 2022 
+-- * LUN file: C:\Users\benny\Desktop\UNI\Bases donnees\Projet\DockerAttemptV2\Sneaker_Wolf_update__v4.lun 
+-- * Schema: Schema physique/1-1 
 -- ********************************************* 
 
 
 -- Database Section
 -- ________________ 
-
 
 
 -- Tables Section
@@ -23,10 +22,11 @@ create table Brand (
      Founding_year date not null,
      constraint ID_Brand_ID primary key (ID));
 
-create table Cart (
+create table Cart_Detail (
      ID int not null auto_increment,
      D_C_ID int not null,
-     constraint ID_Cart_ID primary key (ID),
+     To__ID int not null,
+     constraint ID_Cart_Detail_ID primary key (ID),
      constraint FKDet_Car_ID unique (D_C_ID));
 
 create table Categorie (
@@ -59,8 +59,8 @@ create table Detail (
      Quantity decimal(10,2) not null,
      Price decimal(10,2) not null,
      To__ID int not null,
-     Ordered int,
-     Cart int,
+     Ordered_Detail int,
+     Cart_Detail int,
      constraint ID_Detail_ID primary key (ID));
 
 create table Employee (
@@ -88,12 +88,12 @@ create table Model (
      To__Name_1 varchar(255) not null,
      constraint ID_Model_ID primary key (ID));
 
-create table Ordered (
+create table Ordered_Detail (
      ID int not null auto_increment,
      D_O_ID int not null,
      Status char(1) not null,
      To__ID int not null,
-     constraint ID_Ordered_ID primary key (ID),
+     constraint ID_Ordered_Detail_ID primary key (ID),
      constraint FKDet_Ord_ID unique (D_O_ID));
 
 create table Parcel_Service (
@@ -173,7 +173,6 @@ create table To_stock (
 
 create table User (
      ID int not null auto_increment,
-     To__ID int not null,
      Name bigint not null,
      Surname date not null,
      billing_add_Street varchar(255) not null,
@@ -188,8 +187,7 @@ create table User (
      delivery_add_Country varchar(255) not null,
      Employee int,
      Customer int,
-     constraint ID_User_ID primary key (ID),
-     constraint FKTo_own_ID unique (To__ID));
+     constraint ID_User_ID primary key (ID));
 
 create table Warehouse (
      ID int not null auto_increment,
@@ -206,12 +204,11 @@ create table Warehouse (
 -- Constraints Section
 -- ___________________ 
 
--- Not implemented
--- alter table Cart add constraint ID_Cart_CHK
---     check(exists(select * from User
---                  where User.To__ID = ID)); 
+alter table Cart_Detail add constraint FKTo_own_FK
+     foreign key (To__ID)
+     references User (ID);
 
-alter table Cart add constraint FKDet_Car_FK
+alter table Cart_Detail add constraint FKDet_Car_FK
      foreign key (D_C_ID)
      references Detail (ID);
 
@@ -233,8 +230,8 @@ alter table Demand_Return add constraint FKTo_concern_FK
      references Detail (ID);
 
 alter table Detail add constraint EXTONE_Detail
-     check((Ordered is not null and Cart is null)
-           or (Ordered is null and Cart is not null)); 
+     check((Ordered_Detail is not null and Cart_Detail is null)
+           or (Ordered_Detail is null and Cart_Detail is not null)); 
 
 alter table Detail add constraint FKTo_bind_FK
      foreign key (To__ID)
@@ -268,11 +265,11 @@ alter table Model add constraint FKTo_possess_FK
      foreign key (To__ID, To__Name_1)
      references Line (ID, Name);
 
-alter table Ordered add constraint FKTo_make_FK
+alter table Ordered_Detail add constraint FKTo_make_FK
      foreign key (To__ID)
      references User (ID);
 
-alter table Ordered add constraint FKDet_Ord_FK
+alter table Ordered_Detail add constraint FKDet_Ord_FK
      foreign key (D_O_ID)
      references Detail (ID);
 
@@ -344,10 +341,6 @@ alter table User add constraint EXTONE_User
      check((Customer is not null and Employee is null)
            or (Customer is null and Employee is not null)); 
 
-alter table User add constraint FKTo_own_FK
-     foreign key (To__ID)
-     references Cart (ID);
-
 
 -- Index Section
 -- _____________ 
@@ -355,11 +348,14 @@ alter table User add constraint FKTo_own_FK
 create unique index ID_Brand_IND
      on Brand (ID);
 
-create unique index ID_Cart_IND
-     on Cart (ID);
+create unique index ID_Cart_Detail_IND
+     on Cart_Detail (ID);
+
+create index FKTo_own_IND
+     on Cart_Detail (To__ID);
 
 create unique index FKDet_Car_IND
-     on Cart (D_C_ID);
+     on Cart_Detail (D_C_ID);
 
 create unique index ID_Categorie_IND
      on Categorie (Name);
@@ -415,14 +411,14 @@ create index FKTo_link_IND
 create index FKTo_possess_IND
      on Model (To__ID, To__Name_1);
 
-create unique index ID_Ordered_IND
-     on Ordered (ID);
+create unique index ID_Ordered_Detail_IND
+     on Ordered_Detail (ID);
 
 create index FKTo_make_IND
-     on Ordered (To__ID);
+     on Ordered_Detail (To__ID);
 
 create unique index FKDet_Ord_IND
-     on Ordered (D_O_ID);
+     on Ordered_Detail (D_O_ID);
 
 create unique index ID_Parcel_Service_IND
      on Parcel_Service (ID);
@@ -489,9 +485,6 @@ create index FKTo__Spe_IND
 
 create unique index ID_User_IND
      on User (ID);
-
-create unique index FKTo_own_IND
-     on User (To__ID);
 
 create unique index ID_Warehouse_IND
      on Warehouse (ID);
