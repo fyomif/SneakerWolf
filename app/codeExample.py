@@ -1,14 +1,25 @@
+from json.tool import main
+from logging import NullHandler
 from pickle import TRUE
 from venv import create
 import mysql.connector
 import datetime
 
-cnx = mysql.connector.connect(user='admin', password='password',
-                            host='127.0.0.1',
-                            database='northwind3')
 
-cursor = cnx.cursor()
 
+#Function that allows to open and close the connection to the database
+def establishConnection():
+
+
+    cnx = mysql.connector.connect(user='admin', password='password',
+                                host='127.0.0.1',
+                                database='northwind3')
+ 
+
+    return cnx
+
+#ESTABLISHED CONNECTION AT START OF APP
+cnx = establishConnection()
 
 def setSport(sportString):
 
@@ -360,6 +371,12 @@ def setSport(sportString):
 
 
 
+############################################ UPDATES
+
+def updateUserInfo(ID_user, Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, VIP = 0):
+
+    #the return is true if 
+    customer = getUserByID(ID_user)
 
 
 
@@ -367,6 +384,8 @@ def setSport(sportString):
 
 
 
+
+############################################ SETTERS
 
 
 """
@@ -420,7 +439,9 @@ def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, bill
 
     cursor.close()
 
-    cnx.close()
+    #cnx.close()
+
+    return ID_user
 
 ##subscribeCustomer("barack", "obama", "white house", "1", "1000", "Washington DC", "USA", "white house", "1", "1000", "Washington DC", "USA", 1)
 
@@ -450,7 +471,7 @@ def createCart(detailId, userID, commitVal):
 
         cursor.close()
 
-        cnx.close()
+        #cnx.close()
 
 
 
@@ -483,17 +504,67 @@ def addShoeToCart(quantity, price, to__specification, userID):
     #Last boolean is to determin if the function is called by itself or in combination to deactivate the premature commits
     createCart(ID_detail, userID, False)
 
-    #adds the cart detail to the user
-
-
-
     # data is committed to the database
     cnx.commit()
     cursor.close()
-    cnx.close()
+    #cnx.close()
 
 
 ##addShoeToCart(1, 130, 1)
+
+
+
+
+
+
+
+
+############################################ OBSERVERS
+
+
+"""
+Get user by ID
+"""
+
+def getUserByID(ID_user):
+
+    cursor = cnx.cursor()
+
+    cursor.execute("""SELECT * FROM User
+                      WHERE ID = '%s'""" % ID_user)
+
+    myuser = cursor.fetchone()
+   # fetchone 
+    print(myuser)  
+    
+    #checks if user is customer or employee and return true if its customer and false if employee
+
+    if myuser[14] == None:
+        cursor.execute("""SELECT * FROM Employee
+                            WHERE ID = '%s'""" % ID_user)
+        customerInfo = cursor.fetchone()
+        print(customerInfo)
+    else:
+        cursor.execute("""SELECT ID, VIP FROM Customer
+                            WHERE U_C_ID = '%s'""" % ID_user)
+        customerInfo = cursor.fetchone()
+        print(customerInfo)
+
+
+    userInfo = []
+    userInfo.append(myuser)
+    userInfo.append(customerInfo)
+
+    print(userInfo)
+
+    return customerInfo
+
+getUserByID(5)
+
+
+    
+
+
 
 
 
@@ -503,7 +574,7 @@ def addShoeToCart(quantity, price, to__specification, userID):
 Get all shoes in models
 """
 
-def getShoesBySex(wantedS):
+def getShoesByModel():
 
     cursor = cnx.cursor()
 
@@ -570,4 +641,77 @@ def getShoesBySport(wantedSport):
     print(myresult)
 
 #getShoesBySport("running")
+
+
+
+#First Main attempt 
+
+def Main():
+
+    #opens conection to database
+
+    print("""Welcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you\nHave to make an account!""")
+    returningCustomer = input("Are you a returning customer? Yes/No ")
+
+
+    #used to sign up new customer to sneakerWolf
+    if returningCustomer == "No" or returningCustomer == "no":
+        name = input("Start by giving us your name")
+        surname = input("Now your surname")
+        print("Thank you now we need your addrees starting with your country")
+        delivery_country = input("The country you're in")
+        delivery_city = input("Your city")
+        delivery_street = input("The street name")
+        delivery_number = input("The street number")
+        delivery_postCode = input("and finally your post code")
+
+        same_billing = input("Is your billing address the same? Yes/No")    
+
+        if same_billing == "Yes":
+            billing_country = delivery_country
+            billing_city = delivery_city
+            billing_street = delivery_street
+            billing_number =  delivery_number
+            billing_postCode = delivery_postCode
+
+        vipYesNo = input("""Also we're an exlusive high level fashin collector\nFor the low-low price of 50$ a month you can get VIP status giving you early access to limited edition stock! WoW ikr\nso Yes/No?""")
+
+        if (vipYesNo == "Yes"):
+            vipYesNo = 1
+        else:
+            vipYesNo = input("""Are you sure we have some pretty dope stuff in the back? ಠ__ಠ\nYes I've changed my mind/No""")
+            if vipYesNo == "Yes":
+                vipYesNo = 1
+            else:
+                vipYesNo = 0
+
+        ID_user = subscribeCustomer(name, surname, billing_street, billing_number, billing_street, billing_number, billing_postCode, delivery_street, delivery_number, billing_postCode, billing_city, billing_country, vipYesNo)
+        print("Your customer id is %d, don't forget it you'll need it to log in!" % ID_user)
+    #Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country
+
+    while (True):
+        print("What would you like to access?")
+
+        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category or 4 to look by brand")
+
+        choice = int(choice)
+        if choice == 1:
+            getShoesByModel()
+        elif choice == 2:
+            ####need to add input for sport choice
+            getShoesBySport("running")
+        elif choice == 3:
+            wantedS = input("Choose men, women, unisex or child")
+            getShoesBySex(wantedS)
+        elif choice == 4:
+            ####we need to make a select here on only the brands istead of a print
+            wantedBrand = input("We have nike, asics and adidas")
+            getShoesByBrand(wantedBrand)
+        else:
+            print("invalid input please try again")
+
+
+    cnx.close()
+
+Main()
 
