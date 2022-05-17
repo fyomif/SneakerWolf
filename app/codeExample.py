@@ -11,7 +11,6 @@ import datetime
 #Function that allows to open and close the connection to the database
 def establishConnection():
 
-
     cnx = mysql.connector.connect(user='admin', password='password',
                                 host='127.0.0.1',
                                 database='northwind3')
@@ -438,11 +437,6 @@ def getModelsBySize():
                                                        WHERE Name = 'unisex'))""")
 
                                                        
-                                        
-    """(SELECT *
-                    FROM Released
-                    WHERE ID = (SELECT To__ID
-                            FROM Specification)))"""
 
     myresult = cursor.fetchall()
     for i in myresult:
