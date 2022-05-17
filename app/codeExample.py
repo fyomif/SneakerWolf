@@ -1,3 +1,4 @@
+from distutils.sysconfig import customize_compiler
 from json.tool import main
 from logging import NullHandler
 from pickle import TRUE
@@ -20,6 +21,167 @@ def establishConnection():
 
 #ESTABLISHED CONNECTION AT START OF APP
 cnx = establishConnection()
+
+#setter pour chaque table
+
+def setOrdered(status):  
+
+
+
+    set_salary = ("INSERT INTO Ordered "
+                "(ID, Status) "
+                "VALUES (%(ID)s, %(Status)s)")
+
+    ID = cursor.lastrowid
+
+    # Insert Sport information
+    data_salary = {
+    'ID': ID,
+    'Status': status
+    }
+    cursor.execute(set_salary, data_salary)
+
+    # data is committed to the database
+    cnx.commit()
+    
+    cursor.close()
+
+    cnx.close()
+
+
+
+def setParcelService(name):  
+
+
+
+    set_salary = ("INSERT INTO Parcel Service "
+                "(ID, Name) "
+                "VALUES (%(ID)s, %(Name)s)")
+
+    ID = cursor.lastrowid
+
+    # Insert Sport information
+    data_salary = {
+    'ID': ID,
+    'Name': name
+    }
+    cursor.execute(set_salary, data_salary)
+
+    # data is committed to the database
+    cnx.commit()
+    
+    cursor.close()
+
+    cnx.close()
+
+
+
+def setDetail(quantity,price):  
+
+
+
+    set_salary = ("INSERT INTO Detail "
+                "(ID, Quantity,Price) "
+                "VALUES (%(ID)s, %(Quantity)s,%(Price)s)")
+
+    ID = cursor.lastrowid
+
+    # Insert Sport information
+    data_salary = {
+    'ID': ID,
+    'Quantity': quantity,
+    'Price':price
+    
+    }
+    cursor.execute(set_salary, data_salary)
+
+    # data is committed to the database
+    cnx.commit()
+    
+    cursor.close()
+
+    cnx.close()
+
+
+def setWarehouse(name,surface,location):  # location est un attribut composé. 
+
+
+
+    set_salary = ("INSERT INTO Warehouse "
+                "(ID, Name,Surface_area,Location) "
+                "VALUES (%(ID)s, %(Name)s,%(Surface_area)s,%(Location)s )")
+
+    ID = cursor.lastrowid
+
+    # Insert Sport information
+    data_salary = {
+    'ID': ID,
+    'Name': name,
+    'Surface_area':surface,
+    'Location' : location,
+    }
+    cursor.execute(set_salary, data_salary)
+
+    # data is committed to the database
+    cnx.commit()
+    
+    cursor.close()
+
+    cnx.close()
+
+
+def setDepartement(name,typeDep):  
+
+
+
+    set_salary = ("INSERT INTO Departement "
+                "(ID, Name,Type_Departement) "
+                "VALUES (%(ID)s, %(Name)s,%(Type_Departement)s)")
+
+    ID = cursor.lastrowid
+
+    # Insert Sport information
+    data_salary = {
+    'ID': ID,
+    'Name': name,
+    'Type_Departement':typeDep
+    }
+    cursor.execute(set_salary, data_salary)
+
+    # data is committed to the database
+    cnx.commit()
+    
+    cursor.close()
+
+    cnx.close()
+
+
+
+def setStore(name,adress):  # adress est un attribut composé ?
+
+
+
+    set_salary = ("INSERT INTO Store "
+                "(ID, Name,Adress_store) "
+                "VALUES (%(ID)s, %(Name)s,%(Adress_store)s)")
+
+    ID = cursor.lastrowid
+
+    # Insert Sport information
+    data_salary = {
+    'ID': ID,
+    'Name': name,
+    'Adress_store':adress
+    }
+    cursor.execute(set_salary, data_salary)
+
+    # data is committed to the database
+    cnx.commit()
+    
+    cursor.close()
+
+    cnx.close()
+
 
 def setSport(sportString):
 
@@ -372,11 +534,166 @@ def setSport(sportString):
 
 
 ############################################ UPDATES
-
-def updateUserInfo(ID_user, Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, VIP = 0):
+# Params to be replaced by a tupp
+def updateUserInfo(extractedUserInfo):
 
     #the return is true if 
-    customer = getUserByID(ID_user)
+    
+    cursor = cnx.cursor()
+    update_user = ("""UPDATE User SET Name = %(Name)s, Surname = %(Surname)s, billing_add_Street = %(billing_add_Street)s,billing_add_Number = %(billing_add_Number)s,  billing_add_Postal_code = %(billing_add_Postal_code)s, billing_add_City = %(billing_add_City)s,billing_add_Country = %(billing_add_Country)s, delivery_add_Street = %(delivery_add_Street)s,  delivery_add_Number = %(delivery_add_Number)s, delivery_add_Postal_code = %(delivery_add_Postal_code)s, delivery_add_City = %(delivery_add_City)s, delivery_add_Country = %(delivery_add_Country)s
+                      WHERE ID = %(ID)s""")
+
+
+    data_update = {
+    'Name': extractedUserInfo[1],
+    'Surname' : extractedUserInfo[2],
+    'billing_add_Street' : extractedUserInfo[3],
+    'billing_add_Number' : extractedUserInfo[4],  
+    'billing_add_Postal_code' : extractedUserInfo[5], 
+    'billing_add_City' : extractedUserInfo[6],
+    'billing_add_Country' : extractedUserInfo[7],
+    'delivery_add_Street' : extractedUserInfo[8],  
+    'delivery_add_Number' : extractedUserInfo[9], 
+    'delivery_add_Postal_code' : extractedUserInfo[10], 
+    'delivery_add_City' : extractedUserInfo[11], 
+    'delivery_add_Country' : extractedUserInfo[12],
+    'ID': extractedUserInfo[0],
+    }
+
+    cursor.execute(update_user, data_update)
+
+    cnx.commit()
+    # In GUI we call based on User status
+    # def updateCustInfo
+
+    # def updateEmpInfo
+
+def updateCustInfo(extractedCustomerInfo):
+    cursor = cnx.cursor()
+
+    update_customer = ("""UPDATE Customer SET VIP = %(VIP)s
+                          WHERE ID = %(ID)s""")
+
+    # Insert Sport information
+    data_update = {
+    'ID': extractedCustomerInfo[0],
+    'VIP': extractedCustomerInfo[1],
+    }
+
+    cursor.execute(update_customer, data_update)
+
+    cnx.commit()
+
+def updateEmpInfo(extractedEmployeeInfo):
+    cursor = cnx.cursor()
+
+    update_employee = ("""UPDATE Employee SET Title = %(Title)s, To_work_ID = %(workplace)s, Supervisor_ = %(supervisor)s
+                      WHERE Personnal_number = %(personalID)s""")
+
+    # Insert Sport information
+    data_update = {
+    'personalID' : extractedEmployeeInfo[0],
+    'Title': extractedEmployeeInfo[4],
+    'workplace': extractedEmployeeInfo[5],
+    'supervisor' : extractedEmployeeInfo[6]
+    }
+
+    cursor.execute(update_employee, data_update)
+
+    cnx.commit()
+
+
+
+def changeNewInfo(extractedUserInfo):
+
+    extractedUserInfoCopy = []
+    userInfoList = []
+    userCustEmpList = []
+    extractedUserInfoCopy.append(userInfoList)
+    extractedUserInfoCopy.append(userCustEmpList)
+
+    for i in range(len(extractedUserInfo[0])):
+        extractedUserInfoCopy[0].append(extractedUserInfo[0][i])
+    
+    for j in range(len(extractedUserInfo[1])):
+        extractedUserInfoCopy[1].append(extractedUserInfo[1][j])
+
+
+#ID_user, Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country
+    choice = 0
+    
+    while(choice != 6):
+
+        if (extractedUserInfo[0][14] == None):
+            choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change employee info, press 6 to apply")
+            customer = False
+        else:
+            choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change Customer info, press 6 to apply")
+            customer = True
+        choice = int(choice)
+
+        if choice == 1:
+            extractedUserInfoCopy[0][1] = input("enter new name: ")
+        elif choice == 2:
+            extractedUserInfoCopy[0][2] = input("enter new surname: ")
+        elif choice == 3:
+            choiceBilling = input("Press 1 to change Country , press 2 to change City\npress 3 to change Postal Code, press 4 to change Street\npress 5 to number: ")
+            if choiceBilling == 1:
+                extractedUserInfoCopy[0][7] =  input("enter new country: ")
+            elif choiceBilling == 2:
+                extractedUserInfoCopy[0][6] =  input("enter new city: ")
+            elif choiceBilling == 3:
+                extractedUserInfoCopy[0][5] =  input("enter new postal code: ")
+            elif choiceBilling == 4:
+                extractedUserInfoCopy[0][3] =  input("enter new street: ")
+            elif choiceBilling == 5:
+                extractedUserInfoCopy[0][4] =  input("enter new number: ")
+        elif choice == 4:
+            choiceDelivery = input("Press 1 to change Country , press 2 to change City\npress 3 to change Postal Code, press 4 to change Street\npress 5 to number: ")
+            if choiceDelivery == 1:
+                extractedUserInfoCopy[0][12] =  input("enter new country: ")
+            elif choiceDelivery == 2:
+                extractedUserInfoCopy[0][11] =  input("enter new city: ")
+            elif choiceDelivery == 3:
+                extractedUserInfoCopy[0][10] =  input("enter new postal code: ")
+            elif choiceDelivery == 4:
+                extractedUserInfoCopy[0][8] =  input("enter new street: ")
+            elif choiceDelivery == 5:
+                extractedUserInfoCopy[0][9] =  input("enter new number: ")
+        elif choice == 5 and customer == False:
+            choiceEmployee = input("Press 1 to change Title , press 2 to change departement Id\npress 3 to change your supervisor: ")
+            if choiceEmployee == 1:
+                extractedUserInfoCopy[1][4] = input("enter your new title, I hope it was a promotion!: ")
+            elif choiceEmployee == 2:
+                extractedUserInfoCopy[1][5] = input("enter your new departement id: ")
+            elif choiceEmployee == 3:
+                extractedUserInfoCopy[1][6] = input("enter the personal number of your new supervisor: ")
+        elif choice == 5 and customer == True:
+            extractedUserInfoCopy[1][1] = input("Please enter 1 if you would like to become VIP or 0 to unsubsribe")
+
+
+    updateUserInfo(extractedUserInfoCopy[0])
+
+    if (customer == False):
+        updateEmpInfo(extractedUserInfoCopy[1])
+    elif (customer == True):
+        updateCustInfo(extractedUserInfoCopy[1])
+    
+
+#pseudo code for explanation
+
+#a = getUserInf()
+#status check
+#st = status
+# 1 ) call updateUserInfo
+#if st == cust :
+    # ask to update customer info
+    # call updateCustInfo
+#else : 
+   # ask to update customer info
+    # call updateInfo       
+ 
+#b = changeNewInfo(a)
 
 
 
@@ -550,16 +867,19 @@ def getUserByID(ID_user):
         customerInfo = cursor.fetchone()
         print(customerInfo)
 
-
+    # Create and return one list of 2 tuples  
     userInfo = []
     userInfo.append(myuser)
     userInfo.append(customerInfo)
+    #OR
+    #userInfo[0] = myuser
+    #userInfo[1] = customerInfo
 
     print(userInfo)
 
-    return customerInfo
+    return userInfo
 
-getUserByID(5)
+#getUserByID(5)
 
 
     
@@ -692,7 +1012,7 @@ def Main():
     while (True):
         print("What would you like to access?")
 
-        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category or 4 to look by brand")
+        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info")
 
         choice = int(choice)
         if choice == 1:
@@ -707,9 +1027,16 @@ def Main():
             ####we need to make a select here on only the brands istead of a print
             wantedBrand = input("We have nike, asics and adidas")
             getShoesByBrand(wantedBrand)
+        elif choice == 5:
+            ID_user = input("Please input your ID")
+            returnedUserInfo = getUserByID(ID_user)
+            changeNewInfo(returnedUserInfo)
         else:
             print("invalid input please try again")
-
+            
+        # extractedUserInfo = getUserByID(ID_user)
+        # name = input("please give your name")
+        #appel update updateUserInfo(extractedUserInfo)
 
     cnx.close()
 
