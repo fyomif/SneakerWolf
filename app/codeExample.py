@@ -13,7 +13,7 @@ def establishConnection():
 
     cnx = mysql.connector.connect(user='admin', password='password',
                                 host='127.0.0.1',
-                                database='northwind3')
+                                database='northwind5')
  
 
     return cnx
@@ -520,14 +520,91 @@ def setSport(sportString):
     cursor.close()
     cnx.close()
 
-#getShoes()
-#getShoesSize()
-#getModelsBySize()
+
+
+def setWarehouseStock(warehouseID, productId, quantity):
+
+    cursor = cnx.cursor()
+    set_salary = ("INSERT INTO To_stock "
+                "(T_S_ID, ID, Quantity) "
+                "VALUES (%(T_S_ID)s, %(ID)s, %(Quantity)s)")
+    ID = cursor.lastrowid
+    # Insert Sport information
+    data_salary = {
+    'T_S_ID' : productId,
+    'ID': warehouseID,
+    'Quantity': quantity,
+    }
+    cursor.execute(set_salary, data_salary)
+    # data is committed to the database
+    cnx.commit()
 
 
 
 
 ############################################ UPDATES
+
+#moves stock from one warehouse to another
+
+def updateStockWarehouse(warehouseInfo, quantity):
+    cursor = cnx.cursor()
+    print(warehouseInfo)
+    info_warehouse_quantity = ("""SELECT Quantity FROM To_stock
+                                WHERE ID = %s
+                                AND T_S_ID = %s""" % (warehouseInfo[1][1], warehouseInfo[0]))
+
+    cursor.execute(info_warehouse_quantity)
+    info_warehouse_quantity = cursor.fetchone()
+
+    print(info_warehouse_quantity)
+    print("this is the info warehouse")
+
+    if info_warehouse_quantity == None:
+        return None
+
+    if int(info_warehouse_quantity[0]) >= int(quantity):
+
+
+
+        update_warehouse1 = ("""UPDATE To_stock SET Quantity = %(quantity)s
+                            WHERE ID = %(ID)s""")
+
+        new_quantity = int(info_warehouse_quantity[0]) - int(quantity)
+
+        data_update = {
+        'quantity': new_quantity,
+        'ID' : warehouseInfo[1][1],
+        }            
+        
+        cursor.execute(update_warehouse1, data_update)
+        if type(warehouseInfo) == list:
+            update_warehouse2 = ("""UPDATE To_stock SET Quantity = %(quantity)s
+                            WHERE ID = %(ID)s""")
+
+            new_quantity = int(warehouseInfo[2][2]) + int(quantity)
+            print(new_quantity)
+            print("THIS IS THE NEW QUANTITY WHICH WONT UPDATE")
+
+            data_update = {
+            'quantity': new_quantity,
+            'ID' : warehouseInfo[2][1],
+            }    
+
+            result = cursor.execute(update_warehouse2, data_update)
+        else:
+            setWarehouseStock(warehouseInfo[2], warehouseInfo[0], quantity)
+            
+    else:
+        return "not enough quantity in source warehouse"
+
+
+
+    cnx.commit()
+
+
+
+
+
 # Params to be replaced by a tupp
 def updateUserInfo(extractedUserInfo):
 
@@ -596,6 +673,37 @@ def updateEmpInfo(extractedEmployeeInfo):
 
     cnx.commit()
 
+
+
+def changeNewInfoWarehouse():
+
+    result = getAllWarehouseByID()
+
+    print("Product ID    Warehouse ID      Available stock", end = ' ')
+    for i in range(len(result)):
+        print("\n")
+        for j in range(len(result[i])):
+            print("   ", end = ' ')
+            print(result[i][j], end = '             ')
+
+    productId = input("\nPlease enter a productId to move: ")
+    quantity = input("Please enter quantity: ")
+    sourceId = input("Please enter source warehouse")
+    arrivalId = input("Please enter destination warehouse")
+    warehouseSource = getWarehouseByID(sourceId)
+    warehouseArrival = getWarehouseByID(arrivalId)
+    warehouseInfo = []
+    if warehouseArrival == None:
+        warehouseInfo.append(productId)
+        warehouseInfo.append(warehouseSource) 
+        #this option passes only the warehouse id of the arrival as it doesnt have the shoe in stock at all and needs to be created in to_stock
+        warehouseInfo.append(warehouseArrival)
+    else:
+        warehouseInfo.append(productId)
+        #this version passes two tuples containing the infos of the warehouses
+        warehouseInfo.append(warehouseSource) 
+        warehouseInfo.append(warehouseArrival)
+    updateStockWarehouse(warehouseInfo, quantity)
 
 
 def changeNewInfo(extractedUserInfo):
@@ -697,24 +805,36 @@ def changeNewInfo(extractedUserInfo):
 
 
 ############################################ SETTERS
+"""
+DELETE PERSONAL INFORMATION
+"""
 
+def unsubrsibeUser(userID):
+    userID = str(userID)
+    cursor = cnx.cursor()
+    update_user = ("""UPDATE User SET Name = 'unsubscribed', Surname = 'unsubscribed', billing_add_Street = 'unsubscribed',billing_add_Number = 0,  billing_add_Postal_code = 'unsubscribed', billing_add_City = 'unsubscribed' ,billing_add_Country = 'unsubscribed', delivery_add_Street = 'unsubscribed',  delivery_add_Number = 0, delivery_add_Postal_code = 'unsubscribed', delivery_add_City = 'unsubscribed', delivery_add_Country = 'unsubscribed', username = 'unsubscribed', password = 'unsubscribed'
+                      WHERE ID = %s""" % (userID))
+
+    cursor.execute(update_user)
+
+    cnx.commit()
 
 """
 CREATE A CUSTOMER
 """
 
-def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, VIP = 0):
+def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, username, password, VIP = 0):
 
 
     """needs to generate foreign key before so it first creates a cart, assigns it to a created user and then puts it in the customer table"""
     cursor = cnx.cursor()
    
     query = ("INSERT INTO User "
-                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer) "
-                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s)")
+                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer, username, password) "
+                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s,%(username)s, %(password)s)")
 
     # Insert salary information
-    # if (customerBool == False):
+    # if (customerBool == False):  
     data_user = {
     'Name': Name,
     'Surname': Surname,
@@ -729,6 +849,8 @@ def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, bill
     'delivery_add_City': delivery_add_City,
     'delivery_add_Country': delivery_add_Country,
     'Customer' : 1,
+    'username' : username,
+    'password' : password,
     }
 
     cursor.execute(query, data_user)
@@ -834,6 +956,47 @@ def addShoeToCart(quantity, price, to__specification, userID):
 
 
 """
+Obtain warehouse stock info 
+"""
+
+def getWarehouseByID(ID_user):
+    cursor = cnx.cursor()
+
+    cursor.execute("""SELECT * FROM To_stock
+                      WHERE ID = '%s'""" % ID_user)
+
+    myuser = cursor.fetchone()
+   # fetchone 
+    print(myuser)  
+    print("this is the getwarehousebyid value")
+
+    if myuser == None:
+        return ID_user
+    
+
+    return myuser
+
+"""
+Obtain all warehouses to see info for transfers
+"""
+
+def getAllWarehouseByID():
+    cursor = cnx.cursor()
+
+    cursor.execute("""SELECT * FROM To_stock""")
+
+    myuser = cursor.fetchall()
+
+    if myuser == None:
+        return None
+
+    return myuser
+
+
+
+
+
+"""
 Get user by ID
 """
 
@@ -847,6 +1010,9 @@ def getUserByID(ID_user):
     myuser = cursor.fetchone()
    # fetchone 
     print(myuser)  
+
+    if myuser == None:
+        return None
     
     #checks if user is customer or employee and return true if its customer and false if employee
 
@@ -875,6 +1041,47 @@ def getUserByID(ID_user):
 
 #getUserByID(5)
 
+def getUserByUsernamePassword(username, password):
+
+    cursor = cnx.cursor()
+
+    cursor.execute("""SELECT * FROM User
+                      WHERE username = '%s'
+                      AND password = '%s'""" % (username, password))
+
+    myuser = cursor.fetchone()
+   # fetchone 
+    print(myuser)  
+    
+
+    #checks if input was valid
+    if myuser == None:
+        return None
+
+    #checks if user is customer or employee and return true if its customer and false if employee
+
+    if myuser[14] == None:
+        cursor.execute("""SELECT * FROM Employee
+                            WHERE ID = '%s'""" % myuser[0])
+        customerInfo = cursor.fetchone()
+        print(customerInfo)
+    else:
+        cursor.execute("""SELECT ID, VIP FROM Customer
+                            WHERE U_C_ID = '%s'""" % myuser[0])
+        customerInfo = cursor.fetchone()
+        print(customerInfo)
+
+    # Create and return one list of 2 tuples  
+    userInfo = []
+    userInfo.append(myuser)
+    userInfo.append(customerInfo)
+    #OR
+    #userInfo[0] = myuser
+    #userInfo[1] = customerInfo
+
+    #print(userInfo)
+
+    return userInfo
 
     
 
@@ -993,40 +1200,61 @@ def Main():
         if (vipYesNo == "Yes"):
             vipYesNo = 1
         else:
-            vipYesNo = input("""Are you sure we have some pretty dope stuff in the back? ಠ__ಠ\nYes I've changed my mind/No""")
+            vipYesNo = input("""Are you sure we have some pretty dope stuff in the back? ಠ__ಠ\nYes I've changed my mind/No\n""")
             if vipYesNo == "Yes":
                 vipYesNo = 1
             else:
                 vipYesNo = 0
 
-        ID_user = subscribeCustomer(name, surname, billing_street, billing_number, billing_street, billing_number, billing_postCode, delivery_street, delivery_number, billing_postCode, billing_city, billing_country, vipYesNo)
+        username = input("""Finally lets get you a username: """)
+        password = input("""And now your password: """)
+         
+
+        ID_user = subscribeCustomer(name, surname, billing_street, billing_number, billing_street, billing_number, billing_postCode, delivery_street, delivery_number, billing_postCode, billing_city, billing_country, username, password, vipYesNo)
         print("Your customer id is %d, don't forget it you'll need it to log in!" % ID_user)
     #Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country
 
     while (True):
         print("What would you like to access?")
 
-        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info")
+        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info\n6 to delete your account ")
+        if choice.isnumeric() == False:
+            print("That's not an option try again:")
+            continue
 
         choice = int(choice)
         if choice == 1:
             getShoesByModel()
         elif choice == 2:
             ####need to add input for sport choice
-            getShoesBySport("running")
+            getShoesBySport("running ")
         elif choice == 3:
-            wantedS = input("Choose men, women, unisex or child")
+            wantedS = input("Choose men, women, unisex or child ")
             getShoesBySex(wantedS)
         elif choice == 4:
             ####we need to make a select here on only the brands istead of a print
-            wantedBrand = input("We have nike, asics and adidas")
+            wantedBrand = input("We have nike, asics and adidas ")
             getShoesByBrand(wantedBrand)
         elif choice == 5:
-            ID_user = input("Please input your ID")
+            ID_user = input("Please input your ID ")
             returnedUserInfo = getUserByID(ID_user)
-            changeNewInfo(returnedUserInfo)
+            if returnedUserInfo != None:
+                changeNewInfo(returnedUserInfo)
+            else:
+                print("wrong information try again. ")
+        elif choice == 6:
+            usernameEntry = input("please enter username (cap sensitive): ")
+            passwordEntry = input("and now you password: ")
+            confirmation = input("Are you sure? Yes/No ")
+            if confirmation == "yes" or confirmation == "Yes":
+                userInfo = getUserByUsernamePassword(usernameEntry, passwordEntry)
+                if userInfo != None:
+                    unsubrsibeUser(userInfo[0][0])
+                else:
+                    print("wrong password nice try. ")
         else:
-            print("invalid input please try again")
+            changeNewInfoWarehouse()
+            print("invalid input please try again ")
             
         # extractedUserInfo = getUserByID(ID_user)
         # name = input("please give your name")
