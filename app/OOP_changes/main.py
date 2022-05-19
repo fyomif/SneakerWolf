@@ -3,7 +3,8 @@ import settings
 import adders as ads
 import update as upd
 import interface_extension as iE
-import mysql.connector
+import mysql.connector#
+import time
 
 ###INITIALISES THE CONNECTION AS A GLOBAL VARIABLE
 settings.init()
@@ -14,7 +15,6 @@ settings.init()
 def Main():
 
     #opens conection to database
-
     print("""Welcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you\nHave to make an account!""")
     returningCustomer = input("Do you have an account already? Yes/No ")
 
@@ -57,22 +57,22 @@ def Main():
         ID_user = ads.subscribeCustomer(name, surname, billing_street, billing_number, billing_street, billing_number, billing_postCode, delivery_street, delivery_number, billing_postCode, billing_city, billing_country, username, password, vipYesNo)
         print("Your customer id is %d, don't forget it you'll need it to log in!" % ID_user)
         connected_user = ID_user
-    """else:
+    else:
         while(True):
-            emailUser = input("please enter your email address")
-            passwordUser = input("please enter your password")
-            succesfulLogin = obs.getUserByUsernamePassword(emailUser, passwordUser)
+            emailUser = input("please enter your email address ")
+            passwordUser = input("please enter your password ")
+            succesfulLogin = obs.getUserByEmailPassword(emailUser, passwordUser)
             if (succesfulLogin != None):
                 connected_user = succesfulLogin[0][0]
                 break
-            print("Wrong email or password!\n")"""
+            print("Wrong email or password!\n")
                 
     #Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country
 
     while (True):
         print("What would you like to access?")
 
-        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info")
+        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info\nPress 6 to view cart")
         if choice.isnumeric() == False:
             print("That's not an option try again: ")
             continue
@@ -80,7 +80,7 @@ def Main():
         choice = int(choice)
         if choice == 1:
             #obs.getShoesByModel()
-            obs.getModelBySpecification()
+            obs.getAllShoesSpecifications()
             quantity = input("please input quantity wanted")
             specificationId = input("please the specification Id")
             ads.createDetail(quantity, specificationId, 1)
@@ -101,6 +101,21 @@ def Main():
                 iE.changeNewInfo(returnedUserInfo)
             else:
                 print("wrong information try again. ")
+        elif choice == 6:
+            print("This is your cart content")
+            print(obs.findCartDetailByUserId(connected_user))
+
+            saleOrContinue = input("Press 1 to purchase items in cart, press 2 to keep shopping ") 
+            if saleOrContinue.isnumeric():
+                saleOrContinue = int(saleOrContinue)
+                if saleOrContinue == 1:
+                    ads.addOrderDetailToOrder(connected_user)
+                elif saleOrContinue == 2:
+                    print("Enjoy your shopping! ")
+                else:
+                    print("wrong value try again ")
+            else:
+                print("You haven't entered a number try again ")
         else:
             ##################neeeds to be moved was put here for testing
             iE.changeNewInfoWarehouse()
