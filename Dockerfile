@@ -15,6 +15,8 @@ ADD app/main.py /app/
 
 ADD app/classes app/classes/
 ADD app/helper app/helper/
+ADD app/repository app/repository/
+ADD app/views app/views/
 
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
