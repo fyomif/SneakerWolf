@@ -1,5 +1,6 @@
 import settings
 import observers as obs
+import time
 
 """
 CREATE A CUSTOMER
@@ -142,7 +143,22 @@ def setSport(sportString):
 def createDetail(quantity, specificationId, userId):
 
     cursor = settings.cnx.cursor()
+
+    check_stock = ("""SELECT quantity FROM To_stock
+                      WHERE T_S_ID = %s""" % (specificationId))
+
+    cursor.execute(check_stock)
     
+    quantityCheck = cursor.fetchone()
+
+    if int(quantityCheck[0]) <= 0:
+        print("sadly we're out of stock")
+        return None
+    elif int(quantityCheck[0]) < int(quantity):
+        print("We don't have enough in stock for that order!")
+        print("Available stock is: %s" % (quantityCheck[0]))
+        return None
+
     query0 = ("INSERT INTO Detail"
                "(Quantity, To__ID, Cart_Detail)"
                "VALUES (%(Quantity)s, %(To__ID)s, %(Cart_Detail)s)")
@@ -214,4 +230,110 @@ def addToCart(quantity,To__ID, To__ID_User):
     createDetail(quantity, To__ID, To__ID_User)
     
 
+
+def addOrder(userID):
+    cursor = settings.cnx.cursor()
     
+    query0 = ("INSERT INTO Ordered"
+               "(date, ID)"
+               "VALUES (%(date)s, %(ID)s)")
+
+    data_cart = {
+    'date' : time.strftime('%Y-%m-%d'),
+    'ID' : userID,
+    }
+
+    cursor.execute(query0, data_cart)
+
+    orderNumber = cursor.lastrowid
+
+    # Make sure data is committed to the database
+
+    settings.cnx.commit()
+
+    cursor.close()
+
+    return orderNumber
+
+    #settings.cnx.close()
+
+
+def addOrderDetailToOrder(userID):
+    cursor = settings.cnx.cursor()
+
+
+    cartDetails = obs.findCartDetailByUserId(userID)
+    
+    if cartDetails == None:
+        return None
+    
+    #create order to assosiate the orderedDetails to 
+    orderNumber = addOrder(userID)
+
+    for cartDetailsTuple in cartDetails:
+        
+
+        #deletes cart_detail for exact-1 constraint
+        query1 = ("""DELETE FROM Cart_Detail
+                    WHERE ID = %s""" % (cartDetailsTuple[0]))
+
+        cursor.execute(query1)
+        
+
+        #due to exact-1 constraint you can't update the bool val of orderedDetail
+        #or cartDetail without violating the constraint one way or another
+        #so this requires a temporary suppresion of the row and a 
+        #re-injection with the same data except for the orderedDetail value
+        tupleCpyDetail = obs.findDetailById(cartDetailsTuple[1])
+
+        query2 = ("""DELETE FROM Detail
+                    WHERE ID = %s""" % (cartDetailsTuple[1]))
+
+        cursor.execute(query2)
+
+        
+
+        #update details for exact-1 contraint
+        query3 = ("INSERT INTO Detail"
+                "(ID, Quantity, To__ID, Ordered_Detail)"
+                "VALUES (%(ID)s, %(Quantity)s, %(To__ID)s, %(Ordered_Detail)s)")
+
+
+        data_ordered = {
+        'ID' : tupleCpyDetail[0],
+        'Quantity' : tupleCpyDetail[1],
+        'To__ID' : tupleCpyDetail[2],
+        'Ordered_Detail' : 1,
+        }
+        
+        cursor.execute(query3, data_ordered)
+
+
+        #ads order detail from cart to order
+        query4 = ("INSERT INTO Ordered_Detail"
+                "(D_O_ID, Status, Order_Number)"
+                "VALUES (%(D_O_ID)s, %(Status)s, %(Order_Number)s)")
+
+
+        data_ordered = {
+        'D_O_ID' : cartDetailsTuple[1],
+        'Status' : 'p',
+        'Order_Number' : orderNumber,
+        }
+
+        cursor.execute(query4, data_ordered)
+
+        settings.cnx.commit()
+
+
+    # Make sure data is committed to the database
+
+    
+
+    cursor.close()
+
+    #settings.cnx.close()
+
+    
+
+

@@ -289,3 +289,40 @@ def printBySpecificationModel(result):
         for j in range(len(result[i])):
             print("   ", end = ' ')
             print(result[i][j], end = '             ')
+
+
+
+def findCartDetailByUserId(userID):
+    cursor = settings.cnx.cursor()
+
+    findCartDetail = ("""SELECT * FROM Cart_Detail
+                      WHERE To__ID = %s""" % (userID))
+
+    cursor.execute(findCartDetail)
+
+    cartDetails = cursor.fetchall()
+
+    if cartDetails == None:
+        print("Your cart is empty!")
+        return None
+
+    cartDetailsList =  []
+    for i in range(len(cartDetails)):
+        cartDetailsList.append(cartDetails[i])
+
+    return cartDetailsList
+
+
+
+def findDetailById(detailId):
+    cursor = settings.cnx.cursor()
+
+    findDetail = ("""SELECT * FROM Detail
+                      WHERE ID = %s""" % (detailId))
+
+    cursor.execute(findDetail)
+
+    cartDetails = cursor.fetchone()
+
+    return cartDetails
+
