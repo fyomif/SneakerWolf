@@ -3,7 +3,7 @@ import settings
 import adders as ads
 import update as upd
 import interface_extension as iE
-import mysql.connector#
+import mysql.connector
 import time
 
 ###INITIALISES THE CONNECTION AS A GLOBAL VARIABLE
@@ -72,7 +72,7 @@ def Main():
     while (True):
         print("What would you like to access?")
 
-        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info\nPress 6 to view cart")
+        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info\nPress 6 to view cart or 7 to initiate a return")
         if choice.isnumeric() == False:
             print("That's not an option try again: ")
             continue
@@ -116,9 +116,18 @@ def Main():
                     print("wrong value try again ")
             else:
                 print("You haven't entered a number try again ")
+        elif choice == 7:
+            print("This is the return menu")
+            print("Please enter your shoes Id and your order number\nThis information should be on the papers we sent inside the delivery box")
+            specificationId = input("Please enter shoes Id: ")
+            orderNumber = input("Please enter your order number: ")
+            returnVal = ads.returnShoes(specificationId, connected_user, orderNumber)
+            if returnVal != None:
+                print("Your return is being processed!")
         else:
             ##################neeeds to be moved was put here for testing
-            iE.changeNewInfoWarehouse()
+            ads.sendOrders(connected_user, 1)
+            #iE.changeNewInfoWarehouse()
             print("invalid input please try again ")
             
         # extractedUserInfo = getUserByID(ID_user)

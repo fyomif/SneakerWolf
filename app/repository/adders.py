@@ -145,18 +145,17 @@ def createDetail(quantity, specificationId, userId):
     cursor = settings.cnx.cursor()
 
     check_stock = ("""SELECT quantity FROM To_stock
-                      WHERE T_S_ID = %s""" % (specificationId))
+                      WHERE T_S_ID = %s
+                      AND quantity >= %s""" % (specificationId, quantity))
+
+                      
 
     cursor.execute(check_stock)
     
     quantityCheck = cursor.fetchone()
 
-    if int(quantityCheck[0]) <= 0:
-        print("sadly we're out of stock")
-        return None
-    elif int(quantityCheck[0]) < int(quantity):
-        print("We don't have enough in stock for that order!")
-        print("Available stock is: %s" % (quantityCheck[0]))
+    if quantityCheck == None:
+        print("sadly we don't have enough stock")
         return None
 
     query0 = ("INSERT INTO Detail"
@@ -337,3 +336,106 @@ def addOrderDetailToOrder(userID):
     
 
 
+def returnShoes(specificationId, userId, orderNumber):
+
+    cursor = settings.cnx.cursor()
+
+
+    query0 = ("""SELECT * FROM Detail
+                WHERE To__ID = %s
+                AND ID IN (SELECT D_O_ID FROM Ordered_Detail
+                           WHERE Order_Number in (SELECT Order_Number FROM Ordered
+                                                  WHERE ID = %s
+                                                  AND Order_Number = %s))""" % (specificationId, userId, orderNumber))
+
+    cursor.execute(query0)
+
+    orderedDetails = cursor.fetchone()
+
+    if orderedDetails == None:
+        print("It doesn't seem like you've ordered this shoe before\nAre you sure it's the right shoes id?")
+        return None
+
+
+    query1 = ("INSERT INTO Demand_Return"
+               "(Type, start_date, To_realize_ID, To_concern_ID)"
+               "VALUES (%(Type)s, %(start_date)s, %(To_realize_ID)s, %(To_concern_ID)s)")
+
+    data_return = {
+    'Type' : 'Defective exchange',
+    'start_date' :  time.strftime('%Y-%m-%d'),
+    'To_realize_ID' : userId,
+    'To_concern_ID' : orderedDetails[0], 
+    }
+
+    cursor.execute(query1, data_return)
+
+    # Make sure data is committed to the database
+
+    settings.cnx.commit()
+
+    cursor.close()
+
+    return "done"
+
+
+
+def sendOrders(userId, servicePorviderId):
+    cursor = settings.cnx.cursor()
+
+
+    query0 = ("""SELECT * FROM Detail
+                WHERE Ordered_Detail = 1
+                AND ID not in (SELECT T_D_ID FROM To_serve)""")
+
+    cursor.execute(query0)
+
+    detailsToDeliver = cursor.fetchall()
+    
+
+    if len(detailsToDeliver) == 0:
+        print("No pending orders to deliver \n")
+        return None
+
+    for details in detailsToDeliver:
+
+        query1 = ("""SELECT ts.ID, ts.quantity FROM Warehouse as w, To_stock as ts
+                     WHERE w.ID = ts.ID  
+                     AND ts.T_S_ID = %s
+                     AND ts.quantity >= %s""" % (details[2], details[1]))
+
+        cursor.execute(query1)
+
+        warehouseInfo = cursor.fetchone()
+
+        if (warehouseInfo == None):
+            print("We need to order more of product number %s to fullfill order!" % details[2])
+            continue
+
+        query2 = ("INSERT INTO To_serve"
+                "(T_D_ID, ID, T_P_ID)"
+                "VALUES (%(T_D_ID)s, %(ID)s, %(T_P_ID)s)")
+
+        data_delivery = {
+        'T_D_ID' : details[0],
+        'ID' :  warehouseInfo[0],
+        'T_P_ID' : servicePorviderId,
+        }
+
+        cursor.execute(query2, data_delivery)
+
+        query3 = ("""UPDATE To_stock set quantity = quantity - %s
+                     WHERE T_S_ID = %s
+                     AND ID = %s""" % (int(details[1]), details[2], warehouseInfo[0]))
+
+
+        cursor.execute(query3, data_delivery)
+
+    # Make sure data is committed to the database
+
+    settings.cnx.commit()
+
+    cursor.close()
+
+
+    
