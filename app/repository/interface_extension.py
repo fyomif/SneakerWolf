@@ -15,8 +15,8 @@ def changeNewInfoWarehouse():
 
     productId = input("\nPlease enter a productId to move: ")
     quantity = input("Please enter quantity: ")
-    sourceId = input("Please enter source warehouse")
-    arrivalId = input("Please enter destination warehouse")
+    sourceId = input("Please enter source warehouse: ")
+    arrivalId = input("Please enter destination warehouse: ")
     warehouseSource = obs.getWarehouseByID(sourceId)
     warehouseArrival = obs.getWarehouseByID(arrivalId)
     warehouseInfo = []
@@ -40,6 +40,7 @@ def changeNewInfo(extractedUserInfo):
     userCustEmpList = []
     extractedUserInfoCopy.append(userInfoList)
     extractedUserInfoCopy.append(userCustEmpList)
+   
 
     for i in range(len(extractedUserInfo[0])):
         extractedUserInfoCopy[0].append(extractedUserInfo[0][i])
@@ -47,17 +48,15 @@ def changeNewInfo(extractedUserInfo):
     for j in range(len(extractedUserInfo[1])):
         extractedUserInfoCopy[1].append(extractedUserInfo[1][j])
 
-
-#ID_user, Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country
     choice = 0
     
     while(choice != 7):
 
         if (extractedUserInfo[0][14] == None):
-            choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change employee info, \n6 to delete your account\n press 7 to apply")
+            choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change employee info, \n6 to delete your account\n press 7 to apply ")
             customer = False
         else:
-            choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change Customer info, \n6 to delete your account\n press 7 to apply")
+            choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change Customer info, 6 to delete your account, press 7 to apply ")
             customer = True
         choice = int(choice)
 
@@ -98,7 +97,7 @@ def changeNewInfo(extractedUserInfo):
             elif choiceEmployee == 3:
                 extractedUserInfoCopy[1][6] = input("enter the personal number of your new supervisor: ")
         elif choice == 5 and customer == True:
-            extractedUserInfoCopy[1][1] = input("Please enter 1 if you would like to become VIP or 0 to unsubsribe")
+            extractedUserInfoCopy[1][1] = input("Please enter 1 if you would like to become VIP or 0 to unsubsribe ")
         elif choice == 6:
             usernameEntry = input("please enter username (cap sensitive): ")
             passwordEntry = input("and now you password: ")

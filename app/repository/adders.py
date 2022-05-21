@@ -1,3 +1,4 @@
+import email
 import settings
 import observers as obs
 import time
@@ -6,15 +7,15 @@ import time
 CREATE A CUSTOMER
 """
 
-def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, username, password, VIP = 0):
+def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, email, password, VIP = 0):
 
 
     """needs to generate foreign key before so it first creates a cart, assigns it to a created user and then puts it in the customer table"""
     cursor = settings.cnx.cursor()
    
     query = ("INSERT INTO User "
-                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer, username, password) "
-                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s,%(username)s, %(password)s)")
+                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer, email, password) "
+                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s,%(email)s, %(password)s)")
 
     # Insert salary information
     # if (customerBool == False):  
@@ -32,7 +33,7 @@ def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, bill
     'delivery_add_City': delivery_add_City,
     'delivery_add_Country': delivery_add_Country,
     'Customer' : 1,
-    'username' : username,
+    'email' : email,
     'password' : password,
     }
 

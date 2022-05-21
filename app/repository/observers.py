@@ -1,4 +1,5 @@
 import settings
+import prettytable as pt
 
 
 """
@@ -54,11 +55,28 @@ def getUserByID(ID_user):
                       WHERE ID = '%s'""" % ID_user)
 
     myuser = cursor.fetchone()
-   # fetchone 
-    print(myuser)  
+    #fetchone 
+    #print(myuser)  
 
     if myuser == None:
         return None
+
+    tableFormat = pt.PrettyTable(["Name", "Surname", "billing Street", "Number", "Post code", "city", "country", "email"])
+    tableFormat0 = pt.PrettyTable(["delivery Street", "d Number", "d Post code", "d city"])
+
+    tmpList = []
+    for j in range(1, 8):
+        tmpList.append(myuser[j])
+    tmpList.append(myuser[13])
+    tableFormat.add_row(tmpList)
+    print(tableFormat)
+
+    tmpList = []
+    for j in range(8, 12):
+        tmpList.append(myuser[j])
+
+    tableFormat0.add_row(tmpList)
+    print(tableFormat0)
     
     #checks if user is customer or employee and return true if its customer and false if employee
 
@@ -81,7 +99,7 @@ def getUserByID(ID_user):
     #userInfo[0] = myuser
     #userInfo[1] = customerInfo
 
-    print(userInfo)
+    #print(userInfo)
 
     return userInfo
 
@@ -110,22 +128,17 @@ def getUserByEmailPassword(email, password):
         cursor.execute("""SELECT * FROM Employee
                             WHERE ID = '%s'""" % myuser[0])
         customerInfo = cursor.fetchone()
-        print(customerInfo)
+        #print(customerInfo)
     else:
         cursor.execute("""SELECT ID, VIP FROM Customer
                             WHERE U_C_ID = '%s'""" % myuser[0])
         customerInfo = cursor.fetchone()
-        print(customerInfo)
+        #print(customerInfo)
 
     # Create and return one list of 2 tuples  
     userInfo = []
     userInfo.append(myuser)
     userInfo.append(customerInfo)
-    #OR
-    #userInfo[0] = myuser
-    #userInfo[1] = customerInfo
-
-    #print(userInfo)
 
     return userInfo
 
@@ -155,13 +168,23 @@ def getShoesBySex(wantedS):
     cursor = settings.cnx.cursor()
 
     query = """SELECT * FROM Model
-                WHERE To__Name = '%s'""" % wantedS 
+                WHERE Name = '%s'""" % wantedS 
                     
     cursor.execute(query)
 
     myresult = cursor.fetchall()
 
-    print(myresult)
+    tableFormat = pt.PrettyTable(["ID", "Name", "Sex", "Line"])
+ 
+    for indexSubList in range(len(myresult)):
+        #print("\n")
+        toPrint = [0, 1, 2, 4]
+        tmpList = []
+        for j in toPrint:
+            tmpList.append(myresult[indexSubList][j])
+        tableFormat.add_row(tmpList)
+    print(tableFormat)
+    #print(myresult)
 
 
 #getShoesBySex("men")
@@ -172,34 +195,74 @@ def getShoesByBrand(wantedBrand):
     cursor = settings.cnx.cursor()
 
     query = """SELECT * FROM Model
-                WHERE To__Name_1 IN (SELECT Name FROM Line
+                WHERE To__Name IN (SELECT Name FROM Line
                                     WHERE ID IN (SELECT ID FROM Brand
                                                 WHERE Name = '%s'))""" % wantedBrand
 
     cursor.execute(query)
 
-    myresult = cursor.fetchone()
+    myresult = cursor.fetchall()
+
+    tableFormat = pt.PrettyTable(["ID", "Name", "Sex", "Line"])
+ 
+    for indexSubList in range(len(myresult)):
+        #print("\n")
+        toPrint = [0, 1, 2, 4]
+        tmpList = []
+        for j in toPrint:
+            tmpList.append(myresult[indexSubList][j])
+        tableFormat.add_row(tmpList)
+    print(tableFormat)
 
     #for result in myresult:
-    print(myresult)
+    #print(myresult)
 
 #getShoesByBrand("asics")
 
+
+def getSport():
+    cursor = settings.cnx.cursor()
+
+    query = """SELECT * FROM Sport""" 
+
+    cursor.execute(query)
+
+    myresult = cursor.fetchall()
+
+
+    tableFormat = pt.PrettyTable(["Sport"])
+    
+    for SubList in myresult:
+        tmpList = []
+        tmpList.append(SubList[1])
+        tableFormat.add_row(tmpList)
+    print(tableFormat)
 
 def getShoesBySport(wantedSport):
     cursor = settings.cnx.cursor()
 
     query = """SELECT * FROM Model
-                WHERE To__Name_1 IN (SELECT Name FROM Line
+                WHERE To__Name IN (SELECT Name FROM Line
                                     WHERE To__ID IN (SELECT ID FROM Sport
-                                                WHERE Name = '%s'))""" % wantedSport
+                                                    WHERE Name = '%s'))""" % wantedSport
 
     cursor.execute(query)
 
-    myresult = cursor.fetchone()
+    myresult = cursor.fetchall()
+
+    tableFormat = pt.PrettyTable(["ID", "Name", "Sex", "Line"])
+ 
+    for indexSubList in range(len(myresult)):
+        #print("\n")
+        toPrint = [0, 1, 2, 4]
+        tmpList = []
+        for j in toPrint:
+            tmpList.append(myresult[indexSubList][j])
+        tableFormat.add_row(tmpList)
+    print(tableFormat)
 
     #for result in myresult:
-    print(myresult)
+    #print(myresult)
 
 
 
@@ -250,8 +313,7 @@ def getSpecificationByModel():
                       WHERE To__Name IN (SELECT *
                                         FROM Categorie
                                         WHERE Name IN (SELECT *
-                                                       FROM Released
-                                                       WHERE Name = 'unisex'))""")
+                                                       FROM Released))""")
 
                                                        
 
@@ -277,9 +339,19 @@ def getAllShoesSpecifications():
 
     myresult = cursor.fetchall()
 
+    tableFormat = pt.PrettyTable(["ID", "Name", "Sizes", "Color", "Price", "Sex", "Line", "Release Date", "Offical code"])
+ 
+    for indexSubList in range(len(myresult)):
+        #print("\n")
+        toPrint = [0, 11, 1, 2, 3, 12, 13, 6, 7]
+        tmpList = []
+        for j in toPrint:
+            tmpList.append(myresult[indexSubList][j])
 
-    for i in myresult:
-        print(i)
+            #print("   ", end = '')
+            #print(subList[j], end = '     ')
+        tableFormat.add_row(tmpList)
+    print(tableFormat)
 
 
 def printBySpecificationModel(result):

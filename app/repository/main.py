@@ -15,47 +15,54 @@ settings.init()
 def Main():
 
     #opens conection to database
-    print("""Welcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you\nHave to make an account!""")
+    print("""\nWelcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you have to make an account!\n""")
     returningCustomer = input("Do you have an account already? Yes/No ")
 
 
     #used to sign up new customer to sneakerWolf
     if returningCustomer == "No" or returningCustomer == "no":
-        name = input("Start by giving us your name")
-        surname = input("Now your surname")
-        print("Thank you now we need your addrees starting with your country")
-        delivery_country = input("The country you're in")
-        delivery_city = input("Your city")
-        delivery_street = input("The street name")
-        delivery_number = input("The street number")
-        delivery_postCode = input("and finally your post code")
+        name = input("\nStart by giving us your name ")
+        surname = input("Now your surname ")
+        print("\nThank you now we need your address starting with your country ")
+        delivery_country = input("The country you're in ")
+        delivery_city = input("Your city ")
+        delivery_street = input("The street name ")
+        delivery_number = input("The street number ")
+        delivery_postCode = input("and finally your post code ")
 
-        same_billing = input("Is your billing address the same? Yes/No")    
+        same_billing = input("Is your billing address the same? Yes/No ")    
 
-        if same_billing == "Yes":
+        if same_billing == "Yes" or same_billing == "yes" :
             billing_country = delivery_country
             billing_city = delivery_city
             billing_street = delivery_street
             billing_number =  delivery_number
             billing_postCode = delivery_postCode
+        else:
+            print("Alright please enter your billing address")
+            billing_country = input("The country you're in ")
+            billing_city = input("Your city ")
+            billing_street = input("The street name ")
+            billing_number = input("The street number ")
+            billing_postCode = input("and finally your post code ")
 
-        vipYesNo = input("""Also we're an exlusive high level fashin collector\nFor the low-low price of 50$ a month you can get VIP status giving you early access to limited edition stock! WoW ikr\nso Yes/No?""")
+        vipYesNo = input("""\nAlso we're an exlusive high level fashin collector\nFor the low-low price of 50$ a month you can get VIP status giving you early access to limited edition stock! WoW ikr\nso Yes/No? """)
 
-        if (vipYesNo == "Yes"):
+        if (vipYesNo == "Yes" or vipYesNo == "yes"):
             vipYesNo = 1
         else:
-            vipYesNo = input("""Are you sure we have some pretty dope stuff in the back? ಠ__ಠ\nYes I've changed my mind/No\n""")
-            if vipYesNo == "Yes":
+            vipYesNo = input("""\nAre you sure we have some pretty dope stuff in the back? ಠ__ಠ\nYes I've changed my mind/No """)
+            if vipYesNo == "Yes" or vipYesNo == "yes":
                 vipYesNo = 1
             else:
                 vipYesNo = 0
 
-        username = input("""Finally lets get you a username: """)
+        username = input("""Finally we need an email adress to connect you: """)
         password = input("""And now your password: """)
          
 
         ID_user = ads.subscribeCustomer(name, surname, billing_street, billing_number, billing_street, billing_number, billing_postCode, delivery_street, delivery_number, billing_postCode, billing_city, billing_country, username, password, vipYesNo)
-        print("Your customer id is %d, don't forget it you'll need it to log in!" % ID_user)
+        print("Your email is %s, don't forget it you'll need it to log in!" % ID_user)
         connected_user = ID_user
     else:
         while(True):
@@ -68,11 +75,11 @@ def Main():
             print("Wrong email or password!\n")
                 
     #Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country
-
+    print("\nWelcome to SneakerWolf what would you like to access?\n")
     while (True):
-        print("What would you like to access?")
+        
 
-        choice = input("enter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand or 5 to change your personal info\nPress 6 to view cart or 7 to initiate a return")
+        choice = input("\nEnter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand\nPress 5 to change your personal info, 6 to view cart or 7 to initiate a return\n")
         if choice.isnumeric() == False:
             print("That's not an option try again: ")
             continue
@@ -81,28 +88,31 @@ def Main():
         if choice == 1:
             #obs.getShoesByModel()
             obs.getAllShoesSpecifications()
-            quantity = input("please input quantity wanted")
-            specificationId = input("please the specification Id")
-            ads.createDetail(quantity, specificationId, 1)
+            purchase = input("\nPress 1 to buy something or 2 to get back to the menu ")
+            if purchase.isnumeric() == False:
+                if purchase == 1:
+                    quantity = input("please input quantity wanted ")
+                    specificationId = input("please the specification Id ")
+                    ads.createDetail(quantity, specificationId, 1)
         elif choice == 2:
             ####need to add input for sport choice
-            obs.getShoesBySport("running ")
+            obs.getSport()
+            wantedSport = input("Please enter wanted sport ")
+            obs.getShoesBySport(wantedSport)
         elif choice == 3:
             wantedS = input("Choose men, women, unisex or child ")
-            obs.getShoesBySex(wantedS)
+            if (wantedS != "men" or wantedS != "women" or wantedS != "unisex" or wantedS != "child"):
+                obs.getShoesBySex(wantedS)
         elif choice == 4:
             ####we need to make a select here on only the brands istead of a print
             wantedBrand = input("We have nike, asics and adidas ")
             obs.getShoesByBrand(wantedBrand)
         elif choice == 5:
-            ID_user = input("Please input your ID ")
-            returnedUserInfo = obs.getUserByID(ID_user)
+            returnedUserInfo = obs.getUserByID(connected_user)
             if returnedUserInfo != None:
                 iE.changeNewInfo(returnedUserInfo)
-            else:
-                print("wrong information try again. ")
         elif choice == 6:
-            print("This is your cart content")
+            print("This is your cart content ")
             print(obs.findCartDetailByUserId(connected_user))
 
             saleOrContinue = input("Press 1 to purchase items in cart, press 2 to keep shopping ") 
@@ -118,7 +128,7 @@ def Main():
                 print("You haven't entered a number try again ")
         elif choice == 7:
             print("This is the return menu")
-            print("Please enter your shoes Id and your order number\nThis information should be on the papers we sent inside the delivery box")
+            print("Please enter your shoes Id and your order number\nThis information should be on the papers we sent inside the delivery box ")
             specificationId = input("Please enter shoes Id: ")
             orderNumber = input("Please enter your order number: ")
             returnVal = ads.returnShoes(specificationId, connected_user, orderNumber)
