@@ -1,21 +1,21 @@
 -- *********************************************
--- * SQL MySQL generation                      
+-- * SQL MySQL generation
 -- *--------------------------------------------
--- * DB-MAIN version: 11.0.2              
--- * Generator date: Sep 14 2021              
--- * Generation date: Wed May 18 14:33:58 2022 
--- * LUN file: C:\Users\benny\Desktop\UNI\Bases donnees\Projet\newCommand\Sneaker_Wolf_update__v5.lun 
--- * Schema: Schema Physique 2/1-1 
--- ********************************************* 
+-- * DB-MAIN version: 11.0.2
+-- * Generator date: Sep 14 2021
+-- * Generation date: Wed May 18 14:33:58 2022
+-- * LUN file: C:\Users\benny\Desktop\UNI\Bases donnees\Projet\newCommand\Sneaker_Wolf_update__v5.lun
+-- * Schema: Schema Physique 2/1-1
+-- *********************************************
 
 
 -- Database Section
--- ________________ 
+-- ________________
 
 
 
 -- Tables Section
--- _____________ 
+-- _____________
 
 create table Brand (
      ID int not null auto_increment,
@@ -210,7 +210,7 @@ create table Warehouse (
 
 
 -- Constraints Section
--- ___________________ 
+-- ___________________
 
 alter table Cart_Detail add constraint FKTo_own_FK
      foreign key (To__ID)
@@ -234,7 +234,7 @@ alter table Demand_Return add constraint FKTo_concern_FK
 
 alter table Detail add constraint EXTONE_Detail
      check((Ordered_Detail is not null and Cart_Detail is null)
-           or (Ordered_Detail is null and Cart_Detail is not null)); 
+           or (Ordered_Detail is null and Cart_Detail is not null));
 
 alter table Detail add constraint FKTo_bind_FK
      foreign key (To__ID)
@@ -255,7 +255,7 @@ alter table Employee add constraint FKTo_supervise_FK
 -- Not implemented
 -- alter table Ordered add constraint ID_Ordered_CHK
 --     check(exists(select * from Ordered_Detail
---                  where Ordered_Detail.Order_Number = Order_Number)); 
+--                  where Ordered_Detail.Order_Number = Order_Number));
 
 alter table Ordered add constraint FKTo_pass_FK
      foreign key (ID)
@@ -272,7 +272,7 @@ alter table Line add constraint FKTo_belong_FK
 -- Not implemented
 -- alter table Model add constraint ID_Model_CHK
 --     check(exists(select * from Released
---                  where Released.To__ID = ID)); 
+--                  where Released.To__ID = ID));
 
 alter table Model add constraint FKTo_link_FK
      foreign key (Name)
@@ -292,12 +292,12 @@ alter table Ordered_Detail add constraint FKDet_Ord_FK
 
 alter table Promotion add constraint EXTONE_Promotion
      check((Percentage_amount is not null and Percentage_rate is null)
-           or (Percentage_amount is null and Percentage_rate is not null)); 
+           or (Percentage_amount is null and Percentage_rate is not null));
 
 -- Not implemented
 -- alter table Released add constraint ID_Released_CHK
 --     check(exists(select * from Specification
---                  where Specification.To__ID = ID)); 
+--                  where Specification.To__ID = ID));
 
 alter table Released add constraint FKTo_connect_FK
      foreign key (To__ID)
@@ -317,7 +317,7 @@ alter table To_attach add constraint FKTo__Pro_FK
 
 alter table To_relate add constraint EXTONE_To_relate
      check((Related_to__1__1 is not null and Related_to__1_ is null)
-           or (Related_to__1__1 is null and Related_to__1_ is not null)); 
+           or (Related_to__1__1 is null and Related_to__1_ is not null));
 
 alter table To_relate add constraint FKTo__Dep_FK
      foreign key (T_D_ID)
@@ -361,11 +361,11 @@ alter table To_stock add constraint FKTo__Spe_FK
 
 alter table User add constraint EXTONE_User
      check((Customer is not null and Employee is null)
-           or (Customer is null and Employee is not null)); 
+           or (Customer is null and Employee is not null));
 
 
 -- Index Section
--- _____________ 
+-- _____________
 
 create unique index ID_Brand_IND
      on Brand (ID);
@@ -517,3 +517,52 @@ create unique index ID_User_IND
 create unique index ID_Warehouse_IND
      on Warehouse (ID);
 
+
+ -- Procedure Section
+ -- _________________
+
+ DELIMITER $$
+
+ CREATE PROCEDURE CheckPromoDate(
+     startDate DATE,
+     endDate DATE
+ )
+ BEGIN
+     IF startDate >= endDate THEN
+          SIGNAL SQLSTATE '45000'
+             SET MESSAGE_TEXT = 'Promotion end date must be after start date';
+     END IF;
+ END$$
+
+ DELIMITER ;
+
+ -- Trigger Section
+ -- _____________
+ DELIMITER $$
+
+ CREATE TRIGGER verif_date_promo_insert
+ BEFORE INSERT
+ ON Promotion FOR EACH ROW
+ BEGIN
+  CALL CheckPromoDate (
+         NEW.Pro_Start_date,
+         NEW.Pro_End_date
+     );
+ END$$
+
+ DELIMITER ;
+
+
+ DELIMITER $$
+
+ CREATE TRIGGER verif_date_promo_update
+ BEFORE UPDATE
+ ON Promotion FOR EACH ROW
+ BEGIN
+  CALL CheckPromoDate (
+         NEW.Pro_Start_date,
+         NEW.Pro_End_date
+     );
+ END$$
+
+ DELIMITER ;
