@@ -82,7 +82,7 @@ def Main():
     while (True):
         
 
-        choice = input("\nEnter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand\nPress 5 to change your personal info, 6 to view cart or 7 to initiate a return\n")
+        choice = input("\nEnter 1 to see all models, enter 2 to search by sport, enter 3 to searh by gender category, 4 to look by brand\nPress 5 to change your personal info, 6 to view cart or 7 to initiate a return and finally press 8 to quit\n")
         if choice.isnumeric() == False:
             print("That's not an option try again: ")
             continue
@@ -138,6 +138,8 @@ def Main():
             returnVal = ads.returnShoes(specificationId, connected_user, orderNumber)
             if returnVal != None:
                 print("Your return is being processed!")
+        elif choice == 8:
+            break
         else:
             ##################neeeds to be moved was put here for testing
             if obs.findEmployeeById(connected_user) != None:
@@ -158,7 +160,8 @@ def Main():
         # name = input("please give your name")
         #appel update updateUserInfo(extractedUserInfo)
 
-    cnx.close()
+    print("Thank you for shopping at sneakerWolf!")
+    settings.cnx.close()
 
 Main()
 
