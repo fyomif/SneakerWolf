@@ -518,51 +518,65 @@ create unique index ID_Warehouse_IND
      on Warehouse (ID);
 
 
- -- Procedure Section
- -- _________________
+-- Procedure Section
+-- _________________
+DELIMITER $$
 
- DELIMITER $$
+CREATE PROCEDURE CheckPromoDate(startDate DATE, endDate DATE)
+BEGIN
+ IF startDate >= endDate THEN
+      SIGNAL SQLSTATE '45000'
+         SET MESSAGE_TEXT = 'Promotion end date must be after start date';
+ END IF;
+END $$
 
- CREATE PROCEDURE CheckPromoDate(
-     startDate DATE,
-     endDate DATE
- )
- BEGIN
-     IF startDate >= endDate THEN
-          SIGNAL SQLSTATE '45000'
-             SET MESSAGE_TEXT = 'Promotion end date must be after start date';
-     END IF;
- END$$
+DELIMITER ;
 
- DELIMITER ;
+-- Trigger Section
+-- _____________
+DELIMITER $$
 
- -- Trigger Section
- -- _____________
- DELIMITER $$
-
- CREATE TRIGGER verif_date_promo_insert
- BEFORE INSERT
- ON Promotion FOR EACH ROW
- BEGIN
-  CALL CheckPromoDate (
-         NEW.Pro_Start_date,
-         NEW.Pro_End_date
-     );
- END$$
-
- DELIMITER ;
+CREATE TRIGGER verif_date_promo_insert
+BEFORE INSERT
+ON Promotion FOR EACH ROW
+BEGIN
+CALL CheckPromoDate (
+     NEW.Pro_Start_date,
+     NEW.Pro_End_date
+ );
+END$$
 
 
- DELIMITER $$
+CREATE TRIGGER verif_date_promo_update
+BEFORE UPDATE
+ON Promotion FOR EACH ROW
+BEGIN
+CALL CheckPromoDate (
+     NEW.Pro_Start_date,
+     NEW.Pro_End_date
+ );
+END$$
 
- CREATE TRIGGER verif_date_promo_update
- BEFORE UPDATE
- ON Promotion FOR EACH ROW
- BEGIN
-  CALL CheckPromoDate (
-         NEW.Pro_Start_date,
-         NEW.Pro_End_date
-     );
- END$$
 
- DELIMITER ;
+
+
+
+CREATE TRIGGER verif_return_user_equals_order_user
+BEFORE INSERT
+ON Demand_Return FOR EACH ROW
+BEGIN
+
+    SET @user_id := (SELECT ID FROM Ordered WHERE Order_Number IN
+      (SELECT Order_Number FROM Ordered_Detail WHERE D_O_ID = NEW.To_concern_ID));
+
+    IF not(NEW.To_realize_ID = @user_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'constraint: the user making the return demand must be the one who ordered the item';
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+
+
