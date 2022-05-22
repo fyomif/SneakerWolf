@@ -14,8 +14,8 @@ def getWarehouseByID(ID_user):
 
     myuser = cursor.fetchone()
    # fetchone 
-    print(myuser)  
-    print("this is the getwarehousebyid value")
+    #print(myuser)  
+    #print("this is the getwarehousebyid value")
 
     if myuser == None:
         return ID_user
@@ -84,12 +84,20 @@ def getUserByID(ID_user):
         cursor.execute("""SELECT * FROM Employee
                             WHERE ID = '%s'""" % ID_user)
         customerInfo = cursor.fetchone()
-        print(customerInfo)
+        #print(customerInfo)
     else:
         cursor.execute("""SELECT ID, VIP FROM Customer
                             WHERE U_C_ID = '%s'""" % ID_user)
         customerInfo = cursor.fetchone()
-        print(customerInfo)
+        tableFormat1 = pt.PrettyTable(["VIP"])
+        tmpList = []
+        if customerInfo[1] == '0':
+            tmpList.append(False)
+        else:
+            tmpList.append(True)
+        tableFormat1.add_row(tmpList)
+        print(tableFormat1)
+        #print(customerInfo)
 
     # Create and return one list of 2 tuples  
     userInfo = []
@@ -321,6 +329,27 @@ def getSpecificationByModel():
     for i in myresult:
         print(i)
 
+def getModelBySpecification(specificationId):
+    cursor = settings.cnx.cursor()
+
+    print(specificationId)
+    cursor.execute("""SELECT * FROM Specification, Released, Model
+                      WHERE Specification.To__ID = Released.ID
+                      AND Released.To__ID = Model.ID
+                      AND Specification.ID = %s"""%specificationId)                       
+
+    myresult = cursor.fetchone()
+
+    toPrint = [0, 11, 1, 2, 3, 12, 13, 6, 7]
+    tmpList = []
+    for j in toPrint:
+        tmpList.append(myresult[j])
+    
+ 
+    if myresult == None:
+        return None
+    
+    return tmpList
 
 
 def getAllShoesSpecifications():
@@ -364,25 +393,37 @@ def printBySpecificationModel(result):
 
 
 
-def findCartDetailByUserId(userID):
+def findCartDetailByUserId(userID, preFab = False):
     cursor = settings.cnx.cursor()
 
-    findCartDetail = ("""SELECT * FROM Cart_Detail
-                      WHERE To__ID = %s""" % (userID))
+    findCartDetail = ("""SELECT To__ID, quantity, ID FROM Detail
+                      WHERE ID in (SELECT D_C_ID FROM Cart_Detail
+                                   Where To__ID in (SELECT ID FROM User
+                                                    WHERE ID = %s))""" % (userID))
 
     cursor.execute(findCartDetail)
 
     cartDetails = cursor.fetchall()
 
+    #print(cartDetails)
     if cartDetails == None:
         print("Your cart is empty!")
         return None
 
-    cartDetailsList =  []
-    for i in range(len(cartDetails)):
-        cartDetailsList.append(cartDetails[i])
 
-    return cartDetailsList
+    if preFab == False:
+        tableFormat = pt.PrettyTable(["ID", "Name", "Sizes", "Color", "Price", "Sex", "Line", "Release Date", "Offical code", "quantity", "Total per Model"])
+        
+        for specificationId in cartDetails:
+            print(specificationId[0])
+            tmpList = getModelBySpecification(specificationId[0])
+            tmpList.append(specificationId[1])
+            tmpList.append(int(tmpList[4]*int(tmpList[-1])))
+            tableFormat.add_row(tmpList)
+
+        print(tableFormat)
+
+    return cartDetails
 
 
 
@@ -398,6 +439,20 @@ def findDetailById(detailId):
 
     return cartDetails
 
+def findEmployeeById(userId):
+    cursor = settings.cnx.cursor()
+
+    findEmployee = ("""SELECT * FROM Employee
+                      WHERE ID = %s""" % (userId))
+
+    cursor.execute(findEmployee)
+
+    findEmployee = cursor.fetchone()
+
+    if findEmployee == None:
+        return None
+
+    return findEmployee
 
 
 

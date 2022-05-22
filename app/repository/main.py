@@ -3,6 +3,7 @@ import settings
 import adders as ads
 import update as upd
 import interface_extension as iE
+import preF as preFab
 import mysql.connector
 import time
 
@@ -14,7 +15,8 @@ settings.init()
 
 def Main():
 
-    #opens conection to database
+    preFab.executePreFab()
+
     print("""\nWelcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you have to make an account!\n""")
     returningCustomer = input("Do you have an account already? Yes/No ")
 
@@ -74,7 +76,6 @@ def Main():
                 break
             print("Wrong email or password!\n")
                 
-    #Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country
     print("\nWelcome to SneakerWolf what would you like to access?\n")
     while (True):
         
@@ -89,11 +90,12 @@ def Main():
             #obs.getShoesByModel()
             obs.getAllShoesSpecifications()
             purchase = input("\nPress 1 to buy something or 2 to get back to the menu ")
-            if purchase.isnumeric() == False:
+            if purchase.isnumeric() == True:
+                purchase = int(purchase)
                 if purchase == 1:
                     quantity = input("please input quantity wanted ")
                     specificationId = input("please the specification Id ")
-                    ads.createDetail(quantity, specificationId, 1)
+                    ads.createDetail(quantity, specificationId, connected_user)
         elif choice == 2:
             ####need to add input for sport choice
             obs.getSport()
@@ -113,7 +115,7 @@ def Main():
                 iE.changeNewInfo(returnedUserInfo)
         elif choice == 6:
             print("This is your cart content ")
-            print(obs.findCartDetailByUserId(connected_user))
+            obs.findCartDetailByUserId(connected_user)
 
             saleOrContinue = input("Press 1 to purchase items in cart, press 2 to keep shopping ") 
             if saleOrContinue.isnumeric():
@@ -136,8 +138,10 @@ def Main():
                 print("Your return is being processed!")
         else:
             ##################neeeds to be moved was put here for testing
-            ads.sendOrders(connected_user, 1)
-            #iE.changeNewInfoWarehouse()
+            if obs.findEmployeeById(connected_user) != None:
+                print("welcome to the hidden menu for company users")
+                ads.sendOrders(connected_user, 1)
+                iE.changeNewInfoWarehouse()
             print("invalid input please try again ")
             
         # extractedUserInfo = getUserByID(ID_user)

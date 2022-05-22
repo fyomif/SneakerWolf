@@ -1,4 +1,3 @@
-import email
 import settings
 import observers as obs
 import time
@@ -7,15 +6,15 @@ import time
 CREATE A CUSTOMER
 """
 
-def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, email, password, VIP = 0):
+def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, username, password, VIP = 0):
 
 
     """needs to generate foreign key before so it first creates a cart, assigns it to a created user and then puts it in the customer table"""
     cursor = settings.cnx.cursor()
    
     query = ("INSERT INTO User "
-                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer, email, password) "
-                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s,%(email)s, %(password)s)")
+                "(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, Customer, username, password) "
+                "VALUES (%(Name)s,%(Surname)s, %(billing_add_Street)s, %(billing_add_Number)s, %(billing_add_Postal_code)s, %(billing_add_City)s, %(billing_add_Country)s, %(delivery_add_Street)s, %(delivery_add_Number)s, %(delivery_add_Postal_code)s, %(delivery_add_City)s, %(delivery_add_Country)s, %(Customer)s,%(username)s, %(password)s)")
 
     # Insert salary information
     # if (customerBool == False):  
@@ -33,7 +32,7 @@ def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, bill
     'delivery_add_City': delivery_add_City,
     'delivery_add_Country': delivery_add_Country,
     'Customer' : 1,
-    'email' : email,
+    'username' : username,
     'password' : password,
     }
 
@@ -146,18 +145,18 @@ def createDetail(quantity, specificationId, userId):
     cursor = settings.cnx.cursor()
 
     check_stock = ("""SELECT quantity FROM To_stock
-                      WHERE T_S_ID = %s
-                      AND quantity >= %s""" % (specificationId, quantity))
-
-                      
+                      WHERE T_S_ID = %s""" % (specificationId))
 
     cursor.execute(check_stock)
     
     quantityCheck = cursor.fetchone()
 
-    if quantityCheck == None:
-        print(specificationId)
-        print("sadly we don't have enough stock")
+    if int(quantityCheck[0]) <= 0:
+        print("sadly we're out of stock")
+        return None
+    elif int(quantityCheck[0]) < int(quantity):
+        print("We don't have enough in stock for that order!")
+        print("Available stock is: %s" % (quantityCheck[0]))
         return None
 
     query0 = ("INSERT INTO Detail"
@@ -259,10 +258,11 @@ def addOrder(userID):
     #settings.cnx.close()
 
 
-def addOrderDetailToOrder(userID, preFab = False):
+def addOrderDetailToOrder(userID):
     cursor = settings.cnx.cursor()
 
-    cartDetails = obs.findCartDetailByUserId(userID, preFab)
+
+    cartDetails = obs.findCartDetailByUserId(userID)
     
     if cartDetails == None:
         return None
@@ -275,7 +275,7 @@ def addOrderDetailToOrder(userID, preFab = False):
 
         #deletes cart_detail for exact-1 constraint
         query1 = ("""DELETE FROM Cart_Detail
-                    WHERE D_C_ID = %s""" % (cartDetailsTuple[2]))
+                    WHERE ID = %s""" % (cartDetailsTuple[0]))
 
         cursor.execute(query1)
         
@@ -284,10 +284,10 @@ def addOrderDetailToOrder(userID, preFab = False):
         #or cartDetail without violating the constraint one way or another
         #so this requires a temporary suppresion of the row and a 
         #re-injection with the same data except for the orderedDetail value
-        tupleCpyDetail = obs.findDetailById(cartDetailsTuple[2])
+        tupleCpyDetail = obs.findDetailById(cartDetailsTuple[1])
 
         query2 = ("""DELETE FROM Detail
-                    WHERE ID = %s""" % (cartDetailsTuple[2]))
+                    WHERE ID = %s""" % (cartDetailsTuple[1]))
 
         cursor.execute(query2)
 
@@ -316,12 +316,13 @@ def addOrderDetailToOrder(userID, preFab = False):
 
 
         data_ordered = {
-        'D_O_ID' : cartDetailsTuple[2],
+        'D_O_ID' : cartDetailsTuple[1],
         'Status' : 'p',
         'Order_Number' : orderNumber,
         }
 
         cursor.execute(query4, data_ordered)
+
         settings.cnx.commit()
 
 
@@ -333,9 +334,9 @@ def addOrderDetailToOrder(userID, preFab = False):
 
     #settings.cnx.close()
 
-    
 
 
+################################################################
 def returnShoes(specificationId, userId, orderNumber):
 
     cursor = settings.cnx.cursor()
@@ -344,7 +345,7 @@ def returnShoes(specificationId, userId, orderNumber):
     query0 = ("""SELECT * FROM Detail
                 WHERE To__ID = %s
                 AND ID IN (SELECT D_O_ID FROM Ordered_Detail
-                           WHERE Order_Number in (SELECT Order_Number FROM Ordered
+                           WHERE Order_Number in (SELECT Order_Number FROM ORDERED
                                                   WHERE ID = %s
                                                   AND Order_Number = %s))""" % (specificationId, userId, orderNumber))
 
@@ -378,70 +379,6 @@ def returnShoes(specificationId, userId, orderNumber):
 
     return "done"
 
-
-
-def sendOrders(userId, servicePorviderId):
-    cursor = settings.cnx.cursor()
-
-
-    query0 = ("""SELECT * FROM Detail
-                WHERE Ordered_Detail = 1
-                AND ID not in (SELECT T_D_ID FROM To_serve)""")
-
-    cursor.execute(query0)
-
-    detailsToDeliver = cursor.fetchall()
     
 
-    if len(detailsToDeliver) == 0:
-        print("No pending orders to deliver \n")
-        return None
 
-    for details in detailsToDeliver:
-
-        query1 = ("""SELECT ts.ID, ts.quantity FROM Warehouse as w, To_stock as ts
-                     WHERE w.ID = ts.ID  
-                     AND ts.T_S_ID = %s
-                     AND ts.quantity >= %s""" % (details[2], details[1]))
-
-        cursor.execute(query1)
-
-        warehouseInfo = cursor.fetchone()
-
-        if (warehouseInfo == None):
-            print("We need to order more of product number %s to fullfill order!" % details[2])
-            continue
-
-        query2 = ("INSERT INTO To_serve"
-                "(T_D_ID, ID, T_P_ID)"
-                "VALUES (%(T_D_ID)s, %(ID)s, %(T_P_ID)s)")
-
-        data_delivery = {
-        'T_D_ID' : details[0],
-        'ID' :  warehouseInfo[0],
-        'T_P_ID' : servicePorviderId,
-        }
-
-        cursor.execute(query2, data_delivery)
-
-        query3 = ("""UPDATE To_stock set quantity = quantity - %s
-                     WHERE T_S_ID = %s
-                     AND ID = %s""" % (int(details[1]), details[2], warehouseInfo[0]))
-
-
-        cursor.execute(query3, data_delivery)
-
-        query4 = ("""UPDATE Ordered_Detail set Status = "d"
-                     WHERE D_O_ID = %s""" % (details[0]))
-
-        cursor.execute(query4)
-        
-
-    # Make sure data is committed to the database
-
-    settings.cnx.commit()
-
-    cursor.close()
-
-
-    
