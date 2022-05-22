@@ -76,7 +76,6 @@ def Main():
                 break
             print("Wrong email or password!\n")
                 
-    #Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country
     print("\nWelcome to SneakerWolf what would you like to access?\n")
     while (True):
         
@@ -139,8 +138,10 @@ def Main():
                 print("Your return is being processed!")
         else:
             ##################neeeds to be moved was put here for testing
-            ads.sendOrders(connected_user, 1)
-            #iE.changeNewInfoWarehouse()
+            if obs.findEmployeeById(connected_user) != None:
+                print("welcome to the hidden menu for company users")
+                ads.sendOrders(connected_user, 1)
+                iE.changeNewInfoWarehouse()
             print("invalid input please try again ")
             
         # extractedUserInfo = getUserByID(ID_user)

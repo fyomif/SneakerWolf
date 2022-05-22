@@ -439,6 +439,20 @@ def findDetailById(detailId):
 
     return cartDetails
 
+def findEmployeeById(userId):
+    cursor = settings.cnx.cursor()
+
+    findEmployee = ("""SELECT * FROM Employee
+                      WHERE ID = %s""" % (userId))
+
+    cursor.execute(findEmployee)
+
+    findEmployee = cursor.fetchone()
+
+    if findEmployee == None:
+        return None
+
+    return findEmployee
 
 
 
