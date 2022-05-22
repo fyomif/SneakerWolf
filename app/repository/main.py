@@ -3,6 +3,7 @@ import settings
 import adders as ads
 import update as upd
 import interface_extension as iE
+import preF as preFab
 import mysql.connector
 import time
 
@@ -14,7 +15,8 @@ settings.init()
 
 def Main():
 
-    #opens conection to database
+    preFab.executePreFab()
+
     print("""\nWelcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you have to make an account!\n""")
     returningCustomer = input("Do you have an account already? Yes/No ")
 

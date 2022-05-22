@@ -14,8 +14,8 @@ def getWarehouseByID(ID_user):
 
     myuser = cursor.fetchone()
    # fetchone 
-    print(myuser)  
-    print("this is the getwarehousebyid value")
+    #print(myuser)  
+    #print("this is the getwarehousebyid value")
 
     if myuser == None:
         return ID_user
@@ -84,7 +84,7 @@ def getUserByID(ID_user):
         cursor.execute("""SELECT * FROM Employee
                             WHERE ID = '%s'""" % ID_user)
         customerInfo = cursor.fetchone()
-        print(customerInfo)
+        #print(customerInfo)
     else:
         cursor.execute("""SELECT ID, VIP FROM Customer
                             WHERE U_C_ID = '%s'""" % ID_user)
@@ -393,10 +393,10 @@ def printBySpecificationModel(result):
 
 
 
-def findCartDetailByUserId(userID):
+def findCartDetailByUserId(userID, preFab = False):
     cursor = settings.cnx.cursor()
 
-    findCartDetail = ("""SELECT To__ID, quantity FROM Detail
+    findCartDetail = ("""SELECT To__ID, quantity, ID FROM Detail
                       WHERE ID in (SELECT D_C_ID FROM Cart_Detail
                                    Where To__ID in (SELECT ID FROM User
                                                     WHERE ID = %s))""" % (userID))
@@ -405,27 +405,25 @@ def findCartDetailByUserId(userID):
 
     cartDetails = cursor.fetchall()
 
-    print(cartDetails)
+    #print(cartDetails)
     if cartDetails == None:
         print("Your cart is empty!")
         return None
 
 
-    tableFormat = pt.PrettyTable(["ID", "Name", "Sizes", "Color", "Price", "Sex", "Line", "Release Date", "Offical code", "quantity", "Total per Model"])
-    
-    for specificationId in cartDetails:
-        print(specificationId[0])
-        tmpList = getModelBySpecification(specificationId[0])
-        tmpList.append(specificationId[1])
-        tmpList.append(int(tmpList[4]*int(tmpList[-1])))
-        tableFormat.add_row(tmpList)
+    if preFab == False:
+        tableFormat = pt.PrettyTable(["ID", "Name", "Sizes", "Color", "Price", "Sex", "Line", "Release Date", "Offical code", "quantity", "Total per Model"])
+        
+        for specificationId in cartDetails:
+            print(specificationId[0])
+            tmpList = getModelBySpecification(specificationId[0])
+            tmpList.append(specificationId[1])
+            tmpList.append(int(tmpList[4]*int(tmpList[-1])))
+            tableFormat.add_row(tmpList)
 
-    #print("\n")
-    
+        print(tableFormat)
 
-
-    print(tableFormat)
-    #return cartDetailsList
+    return cartDetails
 
 
 

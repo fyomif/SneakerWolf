@@ -2,19 +2,18 @@ import settings
 import adders as ads
 
 ################
-def setEmployee(nb,nationalReg,birthday,title,toWork,supervisor):       #supervisor est facultatif  
+def setEmployee(userId, nationalReg,birthday,title,toWork,supervisor):       #supervisor est facultatif  
 
     cursor = settings.cnx.cursor()
 
     set_salary = ("INSERT INTO Employee "
-                "(Personnal_number,ID,National_register ,Birthday,Title,To_work_ID,Supervisor_) "
-                "VALUES (%(Personnal_number)s,%(ID)s, %(National_register)s,%(Birthday)s,%(Title)s,%(To_work_ID)s,%(Supervisor_)s)")
+                "(ID,National_register ,Birthday,Title,To_work_ID,Supervisor_) "
+                "VALUES (%(ID)s, %(National_register)s,%(Birthday)s,%(Title)s,%(To_work_ID)s,%(Supervisor_)s)")
 
-    ID = cursor.lastrowid
 
     # Insert Sport information
     data_salary = {
-    'Personnal_number': ID,
+    'ID' : userId,
     'National_register': nationalReg,
     'Birthday': birthday,
     'Title': title,
@@ -32,13 +31,13 @@ def setEmployee(nb,nationalReg,birthday,title,toWork,supervisor):       #supervi
 
 
 
-def setUser(name,Surname,billingSt,billingN,billingPc,billingCity,billingCou,deliverySt,deliveryN,deliveryPc,deliveryCity,deliveryCou):   
+def setUser(name,Surname,billingSt,billingN,billingPc,billingCity,billingCou,deliverySt,deliveryN,deliveryPc,deliveryCity,deliveryCou, email, password):   
 
     cursor = settings.cnx.cursor()
 
     set_salary = ("INSERT INTO User "
-                "(Name,Surname,billing_add_Street,billing_add_Number,billing_add_Postal_code,billing_add_City,billing_add_Country,delivery_add_Street,delivery_add_Number,delivery_add_Postal_code,delivery_add_City,delivery_add_Country) "
-                "VALUES (%(Name)s,%(Surname)s,%(billing_add_Street)s,%(billing_add_Number)s,%(billing_add_Postal_code)s,%(billing_add_City)s,%(billing_add_Country)s, %(delivery_add_Street)s,%(delivery_add_Number)s,%(delivery_add_Postal_code)s,%(delivery_add_City)s,%(delivery_add_Country)s)")
+                "(Name,Surname,billing_add_Street,billing_add_Number,billing_add_Postal_code,billing_add_City,billing_add_Country,delivery_add_Street,delivery_add_Number,delivery_add_Postal_code,delivery_add_City,delivery_add_Country, email, password, Employee) "
+                "VALUES (%(Name)s,%(Surname)s,%(billing_add_Street)s,%(billing_add_Number)s,%(billing_add_Postal_code)s,%(billing_add_City)s,%(billing_add_Country)s, %(delivery_add_Street)s,%(delivery_add_Number)s,%(delivery_add_Postal_code)s,%(delivery_add_City)s,%(delivery_add_Country)s, %(email)s, %(password)s, %(Employee)s)")
 
     ID = cursor.lastrowid
 
@@ -55,7 +54,10 @@ def setUser(name,Surname,billingSt,billingN,billingPc,billingCity,billingCou,del
     'delivery_add_Number' : deliveryN,
     'delivery_add_Postal_code' : deliveryPc,
     'delivery_add_City' : deliveryCity,
-    'delivery_add_Country' : deliveryCou
+    'delivery_add_Country' : deliveryCou,
+    'email' : email,
+    'password' : password,
+    'Employee': 1
     }
     cursor.execute(set_salary, data_salary)
 
@@ -232,7 +234,35 @@ def setWarehouse(name,surface,locationSt,locationN,locationPc,locationCity,locat
     
     cursor.close()
 
+def setToRelate(departementId, warehouseId, StoreId):
+
+    cursor = settings.cnx.cursor()
+
+    if (warehouseId == 0):
+        set_relation = ("INSERT INTO To_relate "
+        "(T_D_ID, Related_to__1__1) "
+        "VALUES (%(T_D_ID)s, %(Related_to__1_1)s)")
+        
+        data_relation = {
+        'T_D_ID': departementId,
+        'Related_to__1_1': StoreId
+        }
+    else:
+        set_relation = ("INSERT INTO To_relate "
+                    "(T_D_ID, Related_to__1_ ) "
+                    "VALUES (%(T_D_ID)s, %(Related_to__1_)s)")
+        data_relation = {
+        'T_D_ID': departementId,
+        'Related_to__1_': warehouseId,
+        }
     
+    cursor.execute(set_relation, data_relation)
+
+    settings.cnx.commit()
+    # data is committed to the database
+    
+    cursor.close()
+
 def setToStock(specificationId, warehouseId, quantity):  
 
     cursor = settings.cnx.cursor()
@@ -452,27 +482,11 @@ def setSpecification(size, color, price, ReleaseID):
     settings.cnx.commit()
     
     cursor.close()
-
-
-
-    cursor.execute(set_release, data_release)
-
-    # data is committed to the database
-    settings.cnx.commit()
     
-    cursor.close()
 
 
 
 
-def getShoesSize():
-    cursor = settings.cnx.cursor()
-
-    cursor.execute("""SELECT Size FROM Specification""")
-
-    myresult = cursor.fetchone()
-
-    print(myresult)
 
 
 
@@ -556,55 +570,205 @@ def setSport(sportString):
 #getShoesSize()
 #getModelsBySize()
 
+def setPromotion(percentageR,percentageA,proName,proStart,proEnd):   
+
+    cursor = settings.cnx.cursor()
+
+    if percentageR == 0:
+
+        set_salary = ("INSERT INTO Promotion "
+                    "(ID, Percentage_amount,Pro_Name,Pro_Start_date,Pro_End_date) "
+                    "VALUES (%(ID)s, %(Percentage_amount)s,%(Pro_Name)s,%(Pro_Start_date)s,%(Pro_End_date)s)")
+
+        ID = cursor.lastrowid
+
+        # Insert Sport information
+        data_salary = {
+        'ID': ID,
+        'Percentage_amount':percentageA,
+        'Pro_Name' : proName,
+        'Pro_Start_date' : proStart,
+        'Pro_End_date' : proEnd
+        }
+    else: 
+        set_salary = ("INSERT INTO Promotion "
+                    "(ID, Percentage_rate ,Pro_Name,Pro_Start_date,Pro_End_date) "
+                    "VALUES (%(ID)s, %(Percentage_rate)s ,%(Pro_Name)s,%(Pro_Start_date)s,%(Pro_End_date)s)")
+
+        ID = cursor.lastrowid
+
+        # Insert Sport information
+        data_salary = {
+        'ID': ID,
+        'Percentage_rate': percentageR,
+        'Pro_Name' : proName,
+        'Pro_Start_date' : proStart,
+        'Pro_End_date' : proEnd
+        }
+    
+    cursor.execute(set_salary, data_salary)
+    # data is committed to the database
+    settings.cnx.commit()
+    
+    cursor.close()
+
+def setTo_attach(tpID,ID):   
+
+    cursor = settings.cnx.cursor()
+
+    set_promo = ("INSERT INTO To_attach "
+                "(ID,T_P_ID) "
+                "VALUES (%(ID)s, %(T_P_ID)s)")
 
 
-"""
+    # Insert Sport information
+    data_promo = {
+    'ID': ID,
+    'T_P_ID': tpID
+    }
+    cursor.execute(set_promo, data_promo)
 
-#   def setEmployee(nb,nationalReg,birthday,title,toWork,supervisor):
-setEmployee(1,"20011998123",20011998,"AAA",11,False)
-setEmployee(2,"20011998444",20011998,"BBB",11,False)
-setEmployee(3,"20011998357",20011998,"CCC",11,False)
-setEmployee(4,"20011998768",20011998,"DDD",11,False)
-setEmployee(5,"20011998978",20011998,"EEE",11,False)
-setEmployee(6,"20011998499",20011998,"FFF",11,False)
-
-
-#   def setUser(name,surname,billingSt,billingN,billingPc,billingCity,billingCou,deliverySt,deliveryN,deliveryPc,deliveryCity,deliveryCou): 
-setUser("Dupont","Paul","JohnF",22,9855,"Namur","Belgique","GeorgeB",11,9655,"Liege","Belgique")
-setUser("Herve","Jean","Saint Pierre",15,9655,"Namur","Belgique","La montagne",19,9300,"Bastogne","Belgique")
-setUser("Laby","Olivier","rue du moulin",40,9850,"Bruxelle","Belgique","rue de mersch",30,9631,"Gemmenich","Belgique")
-setUser("Dacosta","Steven","rue Scheerbach",59,9355,"Liege","Belgique","route d'Arlon",11,9555,"Liege","Belgique")
+    # data is committed to the database
+    settings.cnx.commit()
+    
+    cursor.close()
 
 
-
-#   def setDemand(tpe,startD,toRId,toCId):
-setDemand("mauvaise taille","20/01/2022",1,5)
-setDemand("mauvaise couleur","23/01/2022",2,6)
-setDemand("mauvaise taille","27/01/2022",3,7)
-setDemand("mauvaise couleur","16/01/2022",4,6)
-
-
-
-#   def setCart(doId,toId):
-setCart(1,2)
-setCart(2,3)
-setCart(3,4)
-setCart(4,5)
+def applyPromotions():
+    setPromotion(0,0.25,"Prom hiver","2022-01-1","2022-01-31")
+    setPromotion(40,0,"StValentin","2022-02-14","2022-02-15")
+    setPromotion(0,0.20,"Prom d'été","2022-02-14","2022-02-15")
+    setPromotion(35,0,"SntNicolas","2022-12-06","2022-12-07")
+    setPromotion(60,0,"Noël","2022-12-23","2022-12-26")
 
 
-#   def setOrdered(doId,status,toId):
-setOrdered(11,"livré",12)
-setOrdered(12,"livré",13)
-setOrdered(13,"livré",14)
-setOrdered(14,"livré",15)
+    setTo_attach(1,1)
+    setTo_attach(1,6)
+    setTo_attach(1,11)
+    setTo_attach(1,21)
+    setTo_attach(1,31)
+    setTo_attach(1,41)
+    setTo_attach(1,51)
+    setTo_attach(1,5)
+    setTo_attach(1,16)
 
-#   def setDetail(quantity,price,toId):
-setDetail(3,99.99,2)
-setDetail(3,119.99,3)
-setDetail(1,199.99,12)
-setDetail(2,39.99,4)
-setDetail(1,99.99,11)
-"""
+    setTo_attach(2,2)
+    setTo_attach(3,3)
+    setTo_attach(4,4)
+    setTo_attach(5,5)
+
+    setTo_attach(2,7)
+    setTo_attach(3,8)
+    setTo_attach(4,9)
+    setTo_attach(5,10)
+
+    setTo_attach(2,12)
+    setTo_attach(3,13)
+    setTo_attach(4,14)
+    setTo_attach(5,15)
+
+    setTo_attach(2,22)
+    setTo_attach(3,23)
+    setTo_attach(4,24)
+    setTo_attach(5,25)
+
+    setTo_attach(2,32)
+    setTo_attach(3,33)
+    setTo_attach(4,34)
+    setTo_attach(5,35)
+
+    setTo_attach(2,42)
+    setTo_attach(3,43)
+    setTo_attach(4,44)
+    setTo_attach(5,45)
+
+    setTo_attach(2,52)
+    setTo_attach(3,53)
+    setTo_attach(4,54)
+    setTo_attach(5,55)
+
+    setTo_attach(2,27)
+    setTo_attach(3,37)
+    setTo_attach(4,47)
+    setTo_attach(5,57)
+    setTo_attach(5,1)
+    setTo_attach(4,2)
+    setTo_attach(5,3)
+    setTo_attach(2,4)
+
+    setTo_attach(3,6)
+    setTo_attach(3,7)
+    setTo_attach(1,8)
+    setTo_attach(5,9)
+    setTo_attach(4,10)
+    setTo_attach(4,11)
+    setTo_attach(3,12)
+    setTo_attach(2,13)
+    setTo_attach(5,14)
+    setTo_attach(1,15)
+    setTo_attach(4,21)
+    setTo_attach(3,22)
+    setTo_attach(2,23)
+    setTo_attach(5,24)
+    setTo_attach(1,25)
+    setTo_attach(4,31)
+    setTo_attach(3,32)
+    setTo_attach(2,33)
+    setTo_attach(5,34)
+    setTo_attach(1,35)
+    setTo_attach(4,41)
+    setTo_attach(3,42)
+    setTo_attach(2,43)
+    setTo_attach(5,44)
+    setTo_attach(1,45)
+    setTo_attach(4,51)
+    setTo_attach(3,52)
+    setTo_attach(2,53)
+    setTo_attach(5,54)
+    setTo_attach(1,55)
+    setTo_attach(4,16)
+    setTo_attach(3,27)
+    setTo_attach(2,37)
+    setTo_attach(5,47)
+    setTo_attach(1,57)
+    setTo_attach(4,26)
+    setTo_attach(3,26)
+    setTo_attach(2,26)
+    setTo_attach(5,26)
+    setTo_attach(1,26)
+    setTo_attach(4,27)
+    setTo_attach(3,28)
+    setTo_attach(2,28)
+    setTo_attach(5,28)
+    setTo_attach(1,28)
+    setTo_attach(4,28)
+    setTo_attach(3,29)
+    setTo_attach(2,29)
+    setTo_attach(5,29)
+    setTo_attach(1,29)
+    setTo_attach(4,29)
+    setTo_attach(3,30)
+    setTo_attach(5,30)
+    setTo_attach(1,30)
+    setTo_attach(2,30)
+    setTo_attach(5,36)
+    setTo_attach(1,36)
+    setTo_attach(4,36)
+    setTo_attach(3,36)
+    setTo_attach(2,36)
+    setTo_attach(5,38)
+    setTo_attach(1,38)
+    setTo_attach(4,38)
+    setTo_attach(3,39)
+    setTo_attach(2,39)
+    setTo_attach(5,39)
+    setTo_attach(1,49)
+    setTo_attach(4,40)
+    setTo_attach(3,48)
+    setTo_attach(2,49)
+    setTo_attach(5,50)
+
+
 
 
 def executePreFab():
@@ -626,7 +790,8 @@ def executePreFab():
     #Done
     setDepartement("A","Comptable")
     setDepartement("B","GestionStk")
-    setDepartement("C","HR")
+    setDepartement("C","Management")
+    setDepartement("D", "Vente")
 
     #   def setStore(name,addressSt,addressN,addressPc,addressCity,addressCou):
     #DONE
@@ -635,9 +800,25 @@ def executePreFab():
     setStore("Sneaker Wolf Bxl","rue Jean-Pascal",17,8877,"Bruxelles","Belgique")
     setStore("Sneaker Wolf Jambes","rue Henri Burniaux",3,9557,"Jambes","Belgique")
     setStore("Sneaker Wolf Luxo","rue de Strassen",70,5177,"Capellen","Luxembourg")
-    setStore("Sneaker Wolf Liege","Avenue des Montagnes",37,9227,"Liège","Belgique")
-    setStore("Sneaker Wolf Trier","Bergstrasse",1,6887,"Trèves","Allemagne")
 
+    #comptable
+    setToRelate(1, 0, 1)
+
+    #warehouse
+    setToRelate(2, 1, 0)
+    setToRelate(2, 2, 0)
+    setToRelate(2, 3, 0)
+    setToRelate(2, 4, 0)
+
+    #management store 1 is hq
+    setToRelate(3, 0, 1)
+
+    #sales
+    setToRelate(4, 0, 1)
+    setToRelate(4, 0, 2)
+    setToRelate(4, 0, 3)
+    setToRelate(4, 0, 4)
+    setToRelate(4, 0, 5)
 
 
     ###################################################
@@ -916,5 +1097,72 @@ def executePreFab():
     setToStock(82, 3, 333)
     setToStock(83, 3, 140)
     setToStock(84, 3, 32)
+
+    applyPromotions()
+    #subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, billing_add_Postal_code, billing_add_City, billing_add_Country, delivery_add_Street ,delivery_add_Number, delivery_add_Postal_code, delivery_add_City, delivery_add_Country, email, password, VIP = 0):
+
+    ads.subscribeCustomer("Goerge", "OldClient", "Rue de la paix", 50, 123, "bruxelles", "belgium", "Rue de la paix", 50, 123, "bruxelles", "belgium",
+    "oldclient@gmail.com", "oldclient", 1)
+
+    ads.subscribeCustomer("Harris", "OldClient", "Rue de la croix", 20, 122, "paris", "france", "Rue de la croix", 20, 122, "paris", "france",
+    "oldclient1@gmail.com", "oldclient1", 1)
+
+    ads.subscribeCustomer("Clooney", "OldClient", "Rue de la carcasse", 502, 1213, "allemagne", "berlin", "Rue de la carcasse", 502, 1213, "allemagne", "berlin",
+    "oldclient2@gmail.com", "oldclient2", 0)
+
+    #old sales
+    #user1
+    ads.createDetail(5, 1, 1)
+    ads.createDetail(1, 2, 1)
+    ads.createDetail(1, 50, 1)
+    ads.addOrderDetailToOrder(1, True)
+
+    #user2
+    ads.createDetail(5, 4, 2)
+    ads.createDetail(3, 44, 2)
+    ads.createDetail(1, 12, 2)
+    ads.addOrderDetailToOrder(2, True)
+
+    #sent with bpost 
+    ads.sendOrders(1, 1)
+
+    #user1
+    ads.createDetail(2, 1, 1)
+    ads.createDetail(11, 2, 1)
+    ads.createDetail(15, 50, 1)
+    ads.addOrderDetailToOrder(1, True)
+
+    #user2
+    ads.createDetail(2, 3, 2)
+    ads.createDetail(3, 1, 2)
+    ads.addOrderDetailToOrder(2, True)
+
+    #sent with ups
+    ads.sendOrders(1, 2)
+
+    #returned shoes
+    ads.returnShoes(3, 2, 4)
+
+
+    #Ceo
+    setUser("Big Boss", "Work", "Rue de la victoire", 23, 133, "france", "paris", 
+    "Rue de la victoire", 23, 133, "france", "paris", "ceo@gmail.com", "ceo")
+
+    setEmployee(4, "20011998357","1980-12-12","CEO", 3,None)
+
+    #warehouse worker
+    setUser("Carrey", "Work", "Rue de la halle", 53, 1200, "belgique", "bruxelles","Rue de la halle", 53, 1200, "belgique", "bruxelles", "employee1@gmail.com", "employee1")
+
+    setEmployee(5, "20011998444","1990-03-04","warehouse",2, 1)
+
+    #comptable
+    setUser("Boring", "Work", "Rue de la casse", 3, 133, "france", "paris", "Rue de la casse", 3, 133, "france", "paris", "employee3@gmail.com", "employee3")
+
+    setEmployee(6, "20011998357","1980-12-12","compatable", 1, 1)
+    
+    #salesman
+    setUser("Jared", "Work", "Rue de la carcasse", 502, 1213, "belgique", "jambes", "Rue de la carcasse", 502, 1213, "belgique", "jambes", "employee@gmail.com", "employee")
+
+    setEmployee(7, "20011998123","2000-05-01","saleman",4, 3)
 
 
