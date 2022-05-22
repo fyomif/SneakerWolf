@@ -89,11 +89,12 @@ def Main():
             #obs.getShoesByModel()
             obs.getAllShoesSpecifications()
             purchase = input("\nPress 1 to buy something or 2 to get back to the menu ")
-            if purchase.isnumeric() == False:
+            if purchase.isnumeric() == True:
+                purchase = int(purchase)
                 if purchase == 1:
                     quantity = input("please input quantity wanted ")
                     specificationId = input("please the specification Id ")
-                    ads.createDetail(quantity, specificationId, 1)
+                    ads.createDetail(quantity, specificationId, connected_user)
         elif choice == 2:
             ####need to add input for sport choice
             obs.getSport()
@@ -113,7 +114,7 @@ def Main():
                 iE.changeNewInfo(returnedUserInfo)
         elif choice == 6:
             print("This is your cart content ")
-            print(obs.findCartDetailByUserId(connected_user))
+            obs.findCartDetailByUserId(connected_user)
 
             saleOrContinue = input("Press 1 to purchase items in cart, press 2 to keep shopping ") 
             if saleOrContinue.isnumeric():
