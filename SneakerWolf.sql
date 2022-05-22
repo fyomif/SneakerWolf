@@ -1,21 +1,19 @@
 -- *********************************************
--- * SQL MySQL generation
+-- * SQL MySQL generation                      
 -- *--------------------------------------------
--- * DB-MAIN version: 11.0.2
--- * Generator date: Sep 14 2021
--- * Generation date: Wed May 18 14:33:58 2022
--- * LUN file: C:\Users\benny\Desktop\UNI\Bases donnees\Projet\newCommand\Sneaker_Wolf_update__v5.lun
--- * Schema: Schema Physique 2/1-1
--- *********************************************
+-- * DB-MAIN version: 11.0.2              
+-- * Generator date: Sep 14 2021              
+-- * Generation date: Sun May 22 22:53:30 2022 
+-- * LUN file: C:\Users\benny\Desktop\UNI\Bases donnees\Projet\newCommand\Sneaker_Wolf_update__v5.lun 
+-- * Schema: Schema Physique 5/1-1 
+-- ********************************************* 
 
 
 -- Database Section
--- ________________
-
-
+-- ________________ 
 
 -- Tables Section
--- _____________
+-- _____________ 
 
 create table Brand (
      ID int not null auto_increment,
@@ -58,7 +56,6 @@ create table Department (
 create table Detail (
      ID int not null auto_increment,
      Quantity decimal(10,2) not null,
-     Price decimal(10,2) not null,
      To__ID int not null,
      Ordered_Detail int,
      Cart_Detail int,
@@ -75,11 +72,6 @@ create table Employee (
      constraint ID_Employee_ID primary key (Personnal_number),
      constraint FKUse_Emp_ID unique (ID));
 
-create table Ordered (
-     Order_Number int not null auto_increment,
-     ID int not null,
-     constraint ID_Ordered_ID primary key (Order_Number));
-
 create table Line (
      ID int not null,
      Name varchar(255) not null,
@@ -93,6 +85,12 @@ create table Model (
      To__ID int not null,
      To__Name varchar(255) not null,
      constraint ID_Model_ID primary key (ID));
+
+create table Ordered (
+     Order_Number int not null auto_increment,
+     date date not null,
+     ID int not null,
+     constraint ID_Ordered_ID primary key (Order_Number));
 
 create table Ordered_Detail (
      ID int not null auto_increment,
@@ -160,10 +158,12 @@ create table To_relate (
      constraint ID_To_relate_ID primary key (ID));
 
 create table To_sale (
-     T_S_ID int not null,
-     ID int not null,
+     ID bigint not null auto_increment,
      Quantity char(1) not null,
-     constraint ID_To_sale_ID primary key (ID, T_S_ID));
+     date date not null,
+     T_S_ID int not null,
+     T_S_ID_1 int not null,
+     constraint ID_To_sale_ID primary key (ID));
 
 create table To_serve (
      T_D_ID int not null,
@@ -191,11 +191,12 @@ create table User (
      delivery_add_Postal_code varchar(255) not null,
      delivery_add_City varchar(255) not null,
      delivery_add_Country varchar(255) not null,
-     username varchar(255) not null,
-     password varchar(20) not null,
+     email varchar(255) not null,
+     password varchar(255) not null,
      Employee int,
      Customer int,
-     constraint ID_User_ID primary key (ID));
+     constraint ID_User_ID primary key (ID),
+     constraint SID_User_ID unique (email));
 
 create table Warehouse (
      ID int not null auto_increment,
@@ -210,7 +211,7 @@ create table Warehouse (
 
 
 -- Constraints Section
--- ___________________
+-- ___________________ 
 
 alter table Cart_Detail add constraint FKTo_own_FK
      foreign key (To__ID)
@@ -234,7 +235,7 @@ alter table Demand_Return add constraint FKTo_concern_FK
 
 alter table Detail add constraint EXTONE_Detail
      check((Ordered_Detail is not null and Cart_Detail is null)
-           or (Ordered_Detail is null and Cart_Detail is not null));
+           or (Ordered_Detail is null and Cart_Detail is not null)); 
 
 alter table Detail add constraint FKTo_bind_FK
      foreign key (To__ID)
@@ -252,15 +253,6 @@ alter table Employee add constraint FKTo_supervise_FK
      foreign key (Supervisor_)
      references Employee (Personnal_number);
 
--- Not implemented
--- alter table Ordered add constraint ID_Ordered_CHK
---     check(exists(select * from Ordered_Detail
---                  where Ordered_Detail.Order_Number = Order_Number));
-
-alter table Ordered add constraint FKTo_pass_FK
-     foreign key (ID)
-     references User (ID);
-
 alter table Line add constraint FKTo_have
      foreign key (ID)
      references Brand (ID);
@@ -272,7 +264,7 @@ alter table Line add constraint FKTo_belong_FK
 -- Not implemented
 -- alter table Model add constraint ID_Model_CHK
 --     check(exists(select * from Released
---                  where Released.To__ID = ID));
+--                  where Released.To__ID = ID)); 
 
 alter table Model add constraint FKTo_link_FK
      foreign key (Name)
@@ -281,6 +273,15 @@ alter table Model add constraint FKTo_link_FK
 alter table Model add constraint FKTo_possess_FK
      foreign key (To__ID, To__Name)
      references Line (ID, Name);
+
+-- Not implemented
+-- alter table Ordered add constraint ID_Ordered_CHK
+--     check(exists(select * from Ordered_Detail
+--                  where Ordered_Detail.Order_Number = Order_Number)); 
+
+alter table Ordered add constraint FKTo_pass_FK
+     foreign key (ID)
+     references User (ID);
 
 alter table Ordered_Detail add constraint FKTo_make_FK
      foreign key (Order_Number)
@@ -292,12 +293,12 @@ alter table Ordered_Detail add constraint FKDet_Ord_FK
 
 alter table Promotion add constraint EXTONE_Promotion
      check((Percentage_amount is not null and Percentage_rate is null)
-           or (Percentage_amount is null and Percentage_rate is not null));
+           or (Percentage_amount is null and Percentage_rate is not null)); 
 
 -- Not implemented
 -- alter table Released add constraint ID_Released_CHK
 --     check(exists(select * from Specification
---                  where Specification.To__ID = ID));
+--                  where Specification.To__ID = ID)); 
 
 alter table Released add constraint FKTo_connect_FK
      foreign key (To__ID)
@@ -317,7 +318,7 @@ alter table To_attach add constraint FKTo__Pro_FK
 
 alter table To_relate add constraint EXTONE_To_relate
      check((Related_to__1__1 is not null and Related_to__1_ is null)
-           or (Related_to__1__1 is null and Related_to__1_ is not null));
+           or (Related_to__1__1 is null and Related_to__1_ is not null)); 
 
 alter table To_relate add constraint FKTo__Dep_FK
      foreign key (T_D_ID)
@@ -331,12 +332,12 @@ alter table To_relate add constraint FKrelated_to_1_FK
      foreign key (Related_to__1__1)
      references Store (ID);
 
-alter table To_sale add constraint FKTo__Sto
-     foreign key (ID)
+alter table To_sale add constraint FKTo__Sto_FK
+     foreign key (T_S_ID)
      references Store (ID);
 
 alter table To_sale add constraint FKTo__Spe_1_FK
-     foreign key (T_S_ID)
+     foreign key (T_S_ID_1)
      references Specification (ID);
 
 alter table To_serve add constraint FKTo__War_1_FK
@@ -361,11 +362,11 @@ alter table To_stock add constraint FKTo__Spe_FK
 
 alter table User add constraint EXTONE_User
      check((Customer is not null and Employee is null)
-           or (Customer is null and Employee is not null));
+           or (Customer is null and Employee is not null)); 
 
 
 -- Index Section
--- _____________
+-- _____________ 
 
 create unique index ID_Brand_IND
      on Brand (ID);
@@ -418,12 +419,6 @@ create index FKTo_work_IND
 create index FKTo_supervise_IND
      on Employee (Supervisor_);
 
-create unique index ID_Ordered_IND
-     on Ordered (Order_Number);
-
-create index FKTo_pass_IND
-     on Ordered (ID);
-
 create unique index ID_Line_IND
      on Line (ID, Name);
 
@@ -438,6 +433,12 @@ create index FKTo_link_IND
 
 create index FKTo_possess_IND
      on Model (To__ID, To__Name);
+
+create unique index ID_Ordered_IND
+     on Ordered (Order_Number);
+
+create index FKTo_pass_IND
+     on Ordered (ID);
 
 create unique index ID_Ordered_Detail_IND
      on Ordered_Detail (ID);
@@ -491,10 +492,13 @@ create index FKrelated_to_1_IND
      on To_relate (Related_to__1__1);
 
 create unique index ID_To_sale_IND
-     on To_sale (ID, T_S_ID);
+     on To_sale (ID);
+
+create index FKTo__Sto_IND
+     on To_sale (T_S_ID);
 
 create index FKTo__Spe_1_IND
-     on To_sale (T_S_ID);
+     on To_sale (T_S_ID_1);
 
 create index FKTo__War_1_IND
      on To_serve (ID);
@@ -514,9 +518,11 @@ create index FKTo__Spe_IND
 create unique index ID_User_IND
      on User (ID);
 
+create unique index SID_User_IND
+     on User (email);
+
 create unique index ID_Warehouse_IND
      on Warehouse (ID);
-
 
 -- Procedure Section
 -- _________________
@@ -576,6 +582,7 @@ BEGIN
 
 END$$
 
+
 -- Description : Trigger that checks if there are promotions currently valid for an item if so it applies them.
 -- The promotion has a discount percentage or a discount amount
 CREATE TRIGGER applypromo
@@ -588,7 +595,6 @@ BEGIN
     -- declare cursor for promo_id
     DEClARE curPromoID
         CURSOR FOR
-        -- get promotions available for this detail(item) now
             SELECT T_P_ID FROM To_attach WHERE To_attach.ID = NEW.To__ID AND (CURDATE() BETWEEN (SELECT Pro_Start_date FROM Promotion WHERE ID = T_P_ID limit 1) AND (SELECT Pro_End_date FROM Promotion WHERE ID = T_P_ID limit 1));
 
 
@@ -615,11 +621,11 @@ BEGIN
                 limit 1);
 
         IF(@percentage_rate IS NULL) THEN
-            SET NEW.Price = (NEW.Price - @percentage_amount);
+            UPDATE Specification SET Price =(Price - @percentage_amount) WHERE ID = NEW.To__ID;
         END IF;
 
         IF(@percentage_amount IS NULL) THEN
-            SET NEW.Price = (NEW.price - ((@percentage_rate * NEW.Price) / 100));
+            UPDATE Specification SET Price = (Price- ((@percentage_rate * Price) / 100)) WHERE ID = NEW.To__ID;
         END IF;
 
         SET @percentage_rate := NULL;
@@ -628,5 +634,3 @@ BEGIN
     END LOOP getPromo;
     CLOSE curPromoID;
 END$$
-
-DELIMITER ;

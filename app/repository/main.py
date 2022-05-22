@@ -15,7 +15,9 @@ settings.init()
 
 def Main():
 
-    preFab.executePreFab()
+    load = input("Would you like to load data into database y/n (For Mr Loup's eyes only no customer)\n")
+    if load == "y" or load == "yes" or load == "Yes":
+        preFab.executePreFab()
 
     print("""\nWelcome to the SneakerWolf Website!\nWe sell shoes of all kinds but first you have to make an account!\n""")
     returningCustomer = input("Do you have an account already? Yes/No ")
@@ -102,8 +104,8 @@ def Main():
             wantedSport = input("Please enter wanted sport ")
             obs.getShoesBySport(wantedSport)
         elif choice == 3:
-            wantedS = input("Choose men, women, unisex or child ")
-            if (wantedS != "men" or wantedS != "women" or wantedS != "unisex" or wantedS != "child"):
+            wantedS = input("Choose men, women, unisex")
+            if (wantedS != "men" or wantedS != "women" or wantedS != "unisex"):
                 obs.getShoesBySex(wantedS)
         elif choice == 4:
             ####we need to make a select here on only the brands istead of a print
@@ -140,8 +142,16 @@ def Main():
             ##################neeeds to be moved was put here for testing
             if obs.findEmployeeById(connected_user) != None:
                 print("welcome to the hidden menu for company users")
-                ads.sendOrders(connected_user, 1)
-                iE.changeNewInfoWarehouse()
+                serviceProvider = input("If you would you like to send with bpost press 1, press 2 to use ups")
+                serviceProvider = int(serviceProvider)
+                if serviceProvider == 1:
+                    ads.sendOrders(connected_user, 1)
+                else:
+                    ads.sendOrders(connected_user, 2)
+
+                moveWarehouseStock = input("Would you like to move some stock from one warehoues to another? y/n ")
+                if load == "y" or load == "yes" or load == "Yes":
+                    iE.changeNewInfoWarehouse()
             print("invalid input please try again ")
             
         # extractedUserInfo = getUserByID(ID_user)
