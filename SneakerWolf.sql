@@ -576,7 +576,54 @@ BEGIN
 
 END$$
 
+CREATE TRIGGER applypromo
+BEFORE INSERT
+ON Detail FOR EACH ROW
+BEGIN
+    DECLARE finished INTEGER DEFAULT 0;
+    DECLARE promo_id integer;
+
+    -- declare cursor for promo_id
+    DEClARE curPromoID
+        CURSOR FOR
+            SELECT T_P_ID FROM To_attach WHERE To_attach.ID = NEW.To__ID AND (CURDATE() BETWEEN (SELECT Pro_Start_date FROM Promotion WHERE ID = T_P_ID limit 1) AND (SELECT Pro_End_date FROM Promotion WHERE ID = T_P_ID limit 1));
+
+
+    -- declare NOT FOUND handler
+    DECLARE CONTINUE HANDLER
+        FOR NOT FOUND SET finished = 1;
+
+      OPEN curPromoID;
+
+    getPromo: LOOP
+        FETCH curPromoID INTO promo_id;
+        IF finished = 1 THEN
+            LEAVE getPromo;
+        END IF;
+
+        SET @percentage_amount := (SELECT Percentage_amount
+                from Promotion
+                 WHERE Promotion.ID = promo_id
+                limit 1);
+
+        SET @percentage_rate := (SELECT Percentage_rate
+                from Promotion
+                 WHERE Promotion.ID = promo_id
+                limit 1);
+
+        IF(@percentage_rate IS NULL) THEN
+            SET NEW.Price = (NEW.Price - @percentage_amount);
+        END IF;
+
+        IF(@percentage_amount IS NULL) THEN
+            SET NEW.Price = (NEW.price - ((@percentage_rate * NEW.Price) / 100));
+        END IF;
+
+        SET @percentage_rate := NULL;
+        SET @percentage_amount := NULL;
+
+    END LOOP getPromo;
+    CLOSE curPromoID;
+END$$
+
 DELIMITER ;
-
-
-
