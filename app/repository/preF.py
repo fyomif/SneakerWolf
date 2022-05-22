@@ -1,5 +1,6 @@
 import settings 
 import adders as ads
+from random import randint
 
 ################
 def setEmployee(userId, nationalReg,birthday,title,toWork,supervisor):       #supervisor est facultatif  
@@ -770,6 +771,31 @@ def applyPromotions():
 
 
 
+def generateOldSales():
+
+    #last 5 years
+    for i in range(1, 6):
+        #12 months
+        year = 2022 - i
+        for j in range(1, 13):
+            randomShoe = randint(1, 83)
+            randomAmount = randint(1, 2)
+            randomUser = randint(1, 3)
+            randomSender = randint(1,2)
+            ads.createDetail(randomAmount, randomShoe, randomUser)
+            ads.createDetail(randomAmount, randomShoe, randomUser)
+            ads.createDetail(randomAmount, randomShoe, randomUser)
+
+            if len(i) == 1:
+                month = "0"+j
+                ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, month))
+            else:
+                ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, month))
+            
+            ads.sendOrders(1, randomSender)
+
+
+
 
 def executePreFab():
         
@@ -1136,6 +1162,26 @@ def executePreFab():
     ads.createDetail(2, 3, 2)
     ads.createDetail(3, 1, 2)
     ads.addOrderDetailToOrder(2, True)
+
+    ads.sendOrders(1, 2)
+
+
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+    ads.createDetail(1, 35, 2)
+
 
     #sent with ups
     ads.sendOrders(1, 2)

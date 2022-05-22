@@ -232,7 +232,7 @@ def addToCart(quantity,To__ID, To__ID_User):
     
 
 
-def addOrder(userID):
+def addOrder(userID, date = time.strftime('%Y-%m-%d')):
     cursor = settings.cnx.cursor()
     
     query0 = ("INSERT INTO Ordered"
@@ -240,7 +240,7 @@ def addOrder(userID):
                "VALUES (%(date)s, %(ID)s)")
 
     data_cart = {
-    'date' : time.strftime('%Y-%m-%d'),
+    'date' : date,
     'ID' : userID,
     }
 
@@ -259,7 +259,7 @@ def addOrder(userID):
     #settings.cnx.close()
 
 
-def addOrderDetailToOrder(userID, preFab = False):
+def addOrderDetailToOrder(userID, preFab = False, date = time.strftime('%Y-%m-%d')):
     cursor = settings.cnx.cursor()
 
     cartDetails = obs.findCartDetailByUserId(userID, preFab)
@@ -268,7 +268,7 @@ def addOrderDetailToOrder(userID, preFab = False):
         return None
     
     #create order to assosiate the orderedDetails to 
-    orderNumber = addOrder(userID)
+    orderNumber = addOrder(userID, date)
 
     for cartDetailsTuple in cartDetails:
         
