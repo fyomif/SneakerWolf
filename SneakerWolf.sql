@@ -521,7 +521,7 @@ create unique index ID_Warehouse_IND
 -- Procedure Section
 -- _________________
 DELIMITER $$
-
+-- Procedure that checks if the end date of the promotion is after its start date
 CREATE PROCEDURE CheckPromoDate(startDate DATE, endDate DATE)
 BEGIN
  IF startDate >= endDate THEN
@@ -535,7 +535,7 @@ DELIMITER ;
 -- Trigger Section
 -- _____________
 DELIMITER $$
-
+-- Call a procedure who checks if the end date of the promotion is after its start date before instert a promotion
 CREATE TRIGGER verif_date_promo_insert
 BEFORE INSERT
 ON Promotion FOR EACH ROW
@@ -546,7 +546,7 @@ CALL CheckPromoDate (
  );
 END$$
 
-
+-- Call a procedure who checks if the end date of the promotion is after its start date when a promotion is updated
 CREATE TRIGGER verif_date_promo_update
 BEFORE UPDATE
 ON Promotion FOR EACH ROW
@@ -559,8 +559,8 @@ END$$
 
 
 
-
-
+-- Description : Trigger that checks if the user who wants to return an order is the same user who makes that order.
+-- If the ID of the user making the return request is different from the one who made the the order then an exception is thrown
 CREATE TRIGGER verif_return_user_equals_order_user
 BEFORE INSERT
 ON Demand_Return FOR EACH ROW
@@ -576,6 +576,8 @@ BEGIN
 
 END$$
 
+-- Description : Trigger that checks if there are promotions currently valid for an item if so it applies them.
+-- The promotion has a discount percentage or a discount amount
 CREATE TRIGGER applypromo
 BEFORE INSERT
 ON Detail FOR EACH ROW
@@ -586,6 +588,7 @@ BEGIN
     -- declare cursor for promo_id
     DEClARE curPromoID
         CURSOR FOR
+        -- get promotions available for this detail(item) now
             SELECT T_P_ID FROM To_attach WHERE To_attach.ID = NEW.To__ID AND (CURDATE() BETWEEN (SELECT Pro_Start_date FROM Promotion WHERE ID = T_P_ID limit 1) AND (SELECT Pro_End_date FROM Promotion WHERE ID = T_P_ID limit 1));
 
 
