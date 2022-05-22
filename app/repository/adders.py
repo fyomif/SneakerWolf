@@ -393,7 +393,7 @@ def sendOrders(userId, servicePorviderId):
     detailsToDeliver = cursor.fetchall()
     
 
-    if len(detailsToDeliver) == 0:
+    if len(detailsToDeliver) == 0 and userId != -1:
         print("No pending orders to deliver \n")
         return None
 

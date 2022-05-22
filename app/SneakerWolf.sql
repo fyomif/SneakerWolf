@@ -3,9 +3,9 @@
 -- *--------------------------------------------
 -- * DB-MAIN version: 11.0.2              
 -- * Generator date: Sep 14 2021              
--- * Generation date: Wed May 18 18:24:58 2022 
+-- * Generation date: Sun May 22 22:53:30 2022 
 -- * LUN file: C:\Users\benny\Desktop\UNI\Bases donnees\Projet\newCommand\Sneaker_Wolf_update__v5.lun 
--- * Schema: Schema Physique 3/1-1 
+-- * Schema: Schema Physique 5/1-1 
 -- ********************************************* 
 
 
@@ -72,12 +72,6 @@ create table Employee (
      constraint ID_Employee_ID primary key (Personnal_number),
      constraint FKUse_Emp_ID unique (ID));
 
-create table Ordered (
-     Order_Number int not null auto_increment,
-     date date not null,
-     ID int not null,
-     constraint ID_Ordered_ID primary key (Order_Number));
-
 create table Line (
      ID int not null,
      Name varchar(255) not null,
@@ -91,6 +85,12 @@ create table Model (
      To__ID int not null,
      To__Name varchar(255) not null,
      constraint ID_Model_ID primary key (ID));
+
+create table Ordered (
+     Order_Number int not null auto_increment,
+     date date not null,
+     ID int not null,
+     constraint ID_Ordered_ID primary key (Order_Number));
 
 create table Ordered_Detail (
      ID int not null auto_increment,
@@ -158,10 +158,12 @@ create table To_relate (
      constraint ID_To_relate_ID primary key (ID));
 
 create table To_sale (
-     T_S_ID int not null,
-     ID int not null,
+     ID bigint not null auto_increment,
      Quantity char(1) not null,
-     constraint ID_To_sale_ID primary key (ID, T_S_ID));
+     date date not null,
+     T_S_ID int not null,
+     T_S_ID_1 int not null,
+     constraint ID_To_sale_ID primary key (ID));
 
 create table To_serve (
      T_D_ID int not null,
@@ -251,15 +253,6 @@ alter table Employee add constraint FKTo_supervise_FK
      foreign key (Supervisor_)
      references Employee (Personnal_number);
 
--- Not implemented
--- alter table Ordered add constraint ID_Ordered_CHK
---     check(exists(select * from Ordered_Detail
---                  where Ordered_Detail.Order_Number = Order_Number)); 
-
-alter table Ordered add constraint FKTo_pass_FK
-     foreign key (ID)
-     references User (ID);
-
 alter table Line add constraint FKTo_have
      foreign key (ID)
      references Brand (ID);
@@ -280,6 +273,15 @@ alter table Model add constraint FKTo_link_FK
 alter table Model add constraint FKTo_possess_FK
      foreign key (To__ID, To__Name)
      references Line (ID, Name);
+
+-- Not implemented
+-- alter table Ordered add constraint ID_Ordered_CHK
+--     check(exists(select * from Ordered_Detail
+--                  where Ordered_Detail.Order_Number = Order_Number)); 
+
+alter table Ordered add constraint FKTo_pass_FK
+     foreign key (ID)
+     references User (ID);
 
 alter table Ordered_Detail add constraint FKTo_make_FK
      foreign key (Order_Number)
@@ -330,12 +332,12 @@ alter table To_relate add constraint FKrelated_to_1_FK
      foreign key (Related_to__1__1)
      references Store (ID);
 
-alter table To_sale add constraint FKTo__Sto
-     foreign key (ID)
+alter table To_sale add constraint FKTo__Sto_FK
+     foreign key (T_S_ID)
      references Store (ID);
 
 alter table To_sale add constraint FKTo__Spe_1_FK
-     foreign key (T_S_ID)
+     foreign key (T_S_ID_1)
      references Specification (ID);
 
 alter table To_serve add constraint FKTo__War_1_FK
@@ -417,12 +419,6 @@ create index FKTo_work_IND
 create index FKTo_supervise_IND
      on Employee (Supervisor_);
 
-create unique index ID_Ordered_IND
-     on Ordered (Order_Number);
-
-create index FKTo_pass_IND
-     on Ordered (ID);
-
 create unique index ID_Line_IND
      on Line (ID, Name);
 
@@ -437,6 +433,12 @@ create index FKTo_link_IND
 
 create index FKTo_possess_IND
      on Model (To__ID, To__Name);
+
+create unique index ID_Ordered_IND
+     on Ordered (Order_Number);
+
+create index FKTo_pass_IND
+     on Ordered (ID);
 
 create unique index ID_Ordered_Detail_IND
      on Ordered_Detail (ID);
@@ -490,10 +492,13 @@ create index FKrelated_to_1_IND
      on To_relate (Related_to__1__1);
 
 create unique index ID_To_sale_IND
-     on To_sale (ID, T_S_ID);
+     on To_sale (ID);
+
+create index FKTo__Sto_IND
+     on To_sale (T_S_ID);
 
 create index FKTo__Spe_1_IND
-     on To_sale (T_S_ID);
+     on To_sale (T_S_ID_1);
 
 create index FKTo__War_1_IND
      on To_serve (ID);
@@ -519,3 +524,113 @@ create unique index SID_User_IND
 create unique index ID_Warehouse_IND
      on Warehouse (ID);
 
+-- Procedure Section
+-- _________________
+DELIMITER $$
+-- Procedure that checks if the end date of the promotion is after its start date
+CREATE PROCEDURE CheckPromoDate(startDate DATE, endDate DATE)
+BEGIN
+ IF startDate >= endDate THEN
+      SIGNAL SQLSTATE '45000'
+         SET MESSAGE_TEXT = 'Promotion end date must be after start date';
+ END IF;
+END $$
+
+DELIMITER ;
+
+-- Trigger Section
+-- _____________
+DELIMITER $$
+-- Call a procedure who checks if the end date of the promotion is after its start date before instert a promotion
+CREATE TRIGGER verif_date_promo_insert
+BEFORE INSERT
+ON Promotion FOR EACH ROW
+BEGIN
+CALL CheckPromoDate (
+     NEW.Pro_Start_date,
+     NEW.Pro_End_date
+ );
+END$$
+
+-- Call a procedure who checks if the end date of the promotion is after its start date when a promotion is updated
+CREATE TRIGGER verif_date_promo_update
+BEFORE UPDATE
+ON Promotion FOR EACH ROW
+BEGIN
+CALL CheckPromoDate (
+     NEW.Pro_Start_date,
+     NEW.Pro_End_date
+ );
+END$$
+
+
+
+-- Description : Trigger that checks if the user who wants to return an order is the same user who makes that order.
+-- If the ID of the user making the return request is different from the one who made the the order then an exception is thrown
+CREATE TRIGGER verif_return_user_equals_order_user
+BEFORE INSERT
+ON Demand_Return FOR EACH ROW
+BEGIN
+
+    SET @user_id := (SELECT ID FROM Ordered WHERE Order_Number IN
+      (SELECT Order_Number FROM Ordered_Detail WHERE D_O_ID = NEW.To_concern_ID));
+
+    IF not(NEW.To_realize_ID = @user_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'constraint: the user making the return demand must be the one who ordered the item';
+    END IF;
+
+END$$
+
+
+-- Description : Trigger that checks if there are promotions currently valid for an item if so it applies them.
+-- The promotion has a discount percentage or a discount amount
+CREATE TRIGGER applypromo
+BEFORE INSERT
+ON Detail FOR EACH ROW
+BEGIN
+    DECLARE finished INTEGER DEFAULT 0;
+    DECLARE promo_id integer;
+
+    -- declare cursor for promo_id
+    DEClARE curPromoID
+        CURSOR FOR
+            SELECT T_P_ID FROM To_attach WHERE To_attach.ID = NEW.To__ID AND (CURDATE() BETWEEN (SELECT Pro_Start_date FROM Promotion WHERE ID = T_P_ID limit 1) AND (SELECT Pro_End_date FROM Promotion WHERE ID = T_P_ID limit 1));
+
+
+    -- declare NOT FOUND handler
+    DECLARE CONTINUE HANDLER
+        FOR NOT FOUND SET finished = 1;
+
+      OPEN curPromoID;
+
+    getPromo: LOOP
+        FETCH curPromoID INTO promo_id;
+        IF finished = 1 THEN
+            LEAVE getPromo;
+        END IF;
+
+        SET @percentage_amount := (SELECT Percentage_amount
+                from Promotion
+                 WHERE Promotion.ID = promo_id
+                limit 1);
+
+        SET @percentage_rate := (SELECT Percentage_rate
+                from Promotion
+                 WHERE Promotion.ID = promo_id
+                limit 1);
+
+        IF(@percentage_rate IS NULL) THEN
+            UPDATE Specification SET Price =(Price - @percentage_amount) WHERE ID = NEW.To__ID;
+        END IF;
+
+        IF(@percentage_amount IS NULL) THEN
+            UPDATE Specification SET Price = (Price- ((@percentage_rate * Price) / 100)) WHERE ID = NEW.To__ID;
+        END IF;
+
+        SET @percentage_rate := NULL;
+        SET @percentage_amount := NULL;
+
+    END LOOP getPromo;
+    CLOSE curPromoID;
+END$$

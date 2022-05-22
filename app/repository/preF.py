@@ -67,6 +67,29 @@ def setUser(name,Surname,billingSt,billingN,billingPc,billingCity,billingCou,del
     cursor.close()
 
     
+def setToSale(tsId,sId,quantity, date):
+
+    cursor = settings.cnx.cursor()
+
+    set_storeSale = ("INSERT INTO To_sale "
+                "(T_S_ID_1,T_S_ID,Quantity, date) "
+                "VALUES (%(T_S_ID_1)s, %(T_S_ID)s,%(Quantity)s, %(date)s)")
+
+
+    # Insert  information
+    data_storeSale = {
+    'T_S_ID_1' : tsId,
+    'T_S_ID': sId,
+    'Quantity': quantity,
+    'date' : date,
+    }
+    cursor.execute(set_storeSale, data_storeSale)
+
+    # data is committed to the database
+    settings.cnx.commit()
+    
+    cursor.close()
+
 
 
 
@@ -781,18 +804,27 @@ def generateOldSales():
             randomShoe = randint(1, 83)
             randomAmount = randint(1, 2)
             randomUser = randint(1, 3)
-            randomSender = randint(1,2)
+            randomStore = randint(1, 5)
+
+            
             ads.createDetail(randomAmount, randomShoe, randomUser)
             ads.createDetail(randomAmount, randomShoe, randomUser)
             ads.createDetail(randomAmount, randomShoe, randomUser)
 
-            if len(i) == 1:
-                month = "0"+j
+            monthInt = str(j) 
+            if len(monthInt) == 1:
+                month = "0"+monthInt
                 ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, month))
+                setToSale(randomShoe, randomStore, randomAmount, "%s-%s-05"%(year, month))
             else:
                 ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, month))
-            
-            ads.sendOrders(1, randomSender)
+                setToSale(randomShoe, randomStore, randomAmount, "%s-%s-05"%(year, month))
+
+
+        ads.createDetail(1, 28, 1)
+        ads.addOrderDetailToOrder(1, True)
+        randomSender = randint(1,2)  
+        ads.sendOrders(-1, randomSender)
 
 
 
@@ -1163,31 +1195,14 @@ def executePreFab():
     ads.createDetail(3, 1, 2)
     ads.addOrderDetailToOrder(2, True)
 
-    ads.sendOrders(1, 2)
+    ads.sendOrders(-1, 2)
 
+    generateOldSales()
 
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-    ads.createDetail(1, 35, 2)
-
-
-    #sent with ups
-    ads.sendOrders(1, 2)
 
     #returned shoes
     ads.returnShoes(3, 2, 4)
+
 
 
     #Ceo
