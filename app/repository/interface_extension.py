@@ -52,7 +52,7 @@ def changeNewInfo(extractedUserInfo):
     
     while(choice != 7):
 
-        if (extractedUserInfo[0][14] == None):
+        if (extractedUserInfo[0][15] != "0"):
             choice = input("Press 1 to change name , press 2 to change surname\npress 3 to change billing address, press 4 to change delievery address\npress 5 to change employee info, \n6 to delete your account\n press 7 to apply ")
             customer = False
         else:

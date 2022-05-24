@@ -803,7 +803,7 @@ def generateOldSales():
         for j in range(1, 13):
             randomShoe = randint(1, 83)
             randomAmount = randint(1, 2)
-            randomUser = randint(1, 3)
+            randomUser = randint(1, 2)
             randomStore = randint(1, 5)
 
             

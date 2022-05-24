@@ -122,6 +122,7 @@ def Main():
             obs.getSport()
             wantedSport = input("Please enter wanted sport ")
             obs.getShoesBySport(wantedSport)
+            
         elif choice == 3:
             wantedS = input("Choose men, women, unisex")
             if (wantedS != "men" or wantedS != "women" or wantedS != "unisex"):

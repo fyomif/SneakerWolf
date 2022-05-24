@@ -81,7 +81,7 @@ def getUserByID(ID_user):
     
     #checks if user is customer or employee and return true if its customer and false if employee
 
-    if myuser[14] == None:
+    if myuser[15] != "0":
         cursor.execute("""SELECT * FROM Employee
                             WHERE ID = '%s'""" % ID_user)
         customerInfo = cursor.fetchone()
@@ -459,6 +459,7 @@ def findEmployeeById(userId):
 def getSalesRevenueAnnually(year = time.strftime('%Y')):
     
     if year != time.strftime('%Y'):
+        
         year = [2017, 2018, 2019, 2020, 2021, 2022]
 
         for yearEle in year:
@@ -475,7 +476,9 @@ def getSalesRevenueAnnually(year = time.strftime('%Y')):
             if findYear == None:
                 return None
 
-            print(findYear)
+            print("Amounnt:")
+            print(findYear[0][0])
+            print("")
     else:
         cursor = settings.cnx.cursor()
                 
