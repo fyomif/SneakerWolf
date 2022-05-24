@@ -235,7 +235,7 @@ alter table Demand_Return add constraint FKTo_concern_FK
 
 alter table Detail add constraint EXTONE_Detail
      check((Ordered_Detail is not null and Cart_Detail is null)
-           or (Ordered_Detail is null and Cart_Detail is not null)); 
+           or (Ordered_Detail is null and Cart_Detail is not null));
 
 alter table Detail add constraint FKTo_bind_FK
      foreign key (To__ID)
@@ -293,7 +293,7 @@ alter table Ordered_Detail add constraint FKDet_Ord_FK
 
 alter table Promotion add constraint EXTONE_Promotion
      check((Percentage_amount is not null and Percentage_rate is null)
-           or (Percentage_amount is null and Percentage_rate is not null)); 
+           or (Percentage_amount is null and Percentage_rate is not null));
 
 -- Not implemented
 -- alter table Released add constraint ID_Released_CHK
@@ -318,7 +318,7 @@ alter table To_attach add constraint FKTo__Pro_FK
 
 alter table To_relate add constraint EXTONE_To_relate
      check((Related_to__1__1 is not null and Related_to__1_ is null)
-           or (Related_to__1__1 is null and Related_to__1_ is not null)); 
+           or (Related_to__1__1 is null and Related_to__1_ is not null));
 
 alter table To_relate add constraint FKTo__Dep_FK
      foreign key (T_D_ID)
@@ -362,7 +362,7 @@ alter table To_stock add constraint FKTo__Spe_FK
 
 alter table User add constraint EXTONE_User
      check((Customer is not null and Employee is null)
-           or (Customer is null and Employee is not null)); 
+           or (Customer is null and Employee is not null));
 
 
 -- Index Section
@@ -524,6 +524,20 @@ create unique index SID_User_IND
 create unique index ID_Warehouse_IND
      on Warehouse (ID);
 
+-- Role section
+-- ------------
+create role COMPTABLE;
+
+-- USER SECTION
+-- -----------
+CREATE USER 'jessy'@'%'
+  IDENTIFIED WITH caching_sha2_password BY 'new_password'
+  PASSWORD EXPIRE INTERVAL 180 DAY
+  FAILED_LOGIN_ATTEMPTS 3 PASSWORD_LOCK_TIME 2;
+
+GRANT COMPTABLE TO 'jessy'@'%';
+
+
 -- Procedure Section
 -- _________________
 DELIMITER $$
@@ -634,3 +648,62 @@ BEGIN
     END LOOP getPromo;
     CLOSE curPromoID;
 END$$
+
+
+
+-- View Section
+-- ____________
+
+-- VIEW That shows sales per month/year
+CREATE VIEW CHIFFRES_AFFAIRE(ANNEE, MOIS, CHIFFRE_AFFAIRE_MENSUEL) AS
+SELECT year(date_commande) annee, month(date_commande) as mois, sum(prix_payee) as chiffre_affaire_mensuel
+FROM (
+         SELECT (SELECT date FROM Ordered WHERE Ordered.Order_Number = OD.Order_Number) as date_commande,
+                (SELECT (Price * (SELECT Quantity FROM Detail D WHERE ID = OD.D_O_ID))
+                 FROM Specification
+                 WHERE ID IN (SELECT To__ID FROM Detail D WHERE ID = OD.D_O_ID))        as prix_payee
+         FROM Ordered_Detail OD
+         UNION ALL
+
+         SELECT date                                                                  as date_commande,
+                (quantity * (SELECT Price from Specification WHERE ID = TS.T_S_ID_1)) as prix_payee
+         from To_sale TS) commande_prix
+GROUP BY year(date_commande), month(date_commande)
+ORDER BY year(date_commande), month(date_commande);
+
+-- GRANTING ACCESS TO COMPTABLE ROLE
+GRANT SELECT ON CHIFFRES_AFFAIRE TO COMPTABLE;
+
+
+
+-- VIEW that calculates total order amount per country
+CREATE VIEW TOTAL_ORDER_PER_COUNTRY AS
+SELECT delivery_country, sum(prix_payee) as total
+from (
+         SELECT (SELECT Ordered.Order_Number FROM Ordered WHERE Ordered.Order_Number = OD.Order_Number) as order_number,
+                (SELECT Ordered.ID FROM Ordered WHERE Ordered.Order_Number = OD.Order_Number)           as user_id,
+                (SELECT delivery_add_Country from User WHERE ID = user_id)                              as delivery_country,
+                (SELECT (Price * (SELECT Quantity FROM Detail D WHERE ID = OD.D_O_ID))
+                 FROM Specification
+                 WHERE ID IN (SELECT To__ID FROM Detail D WHERE ID = OD.D_O_ID))                        as prix_payee
+         FROM Ordered_Detail OD) userTOTAL
+GROUP BY delivery_country;
+
+
+-- A View that shows employees name, surname, departement name
+CREATE VIEW EMPLOYEES_INFO_DEPARTEMENT AS
+SELECT (SELECT Name from User WHERE ID = e.ID)    as name,
+       (SELECT Surname from User WHERE ID = e.ID) as surname,
+       d.name as departemen_name
+
+FROM Employee e
+         INNER JOIN
+     Department d ON d.id = e.To_work_ID
+ORDER BY surname;
+
+
+-- VIEW That shows everyline for each sport
+CREATE VIEW SPORTS_LINES AS
+SELECT Sport.Name FROM Sport
+RIGHT JOIN Line
+ON Line.To__ID = Sport.ID;
