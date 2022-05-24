@@ -1,5 +1,6 @@
 import settings
 import prettytable as pt
+import time
 
 
 """
@@ -455,5 +456,74 @@ def findEmployeeById(userId):
     return findEmployee
 
 
+def getSalesRevenueAnnually(year = time.strftime('%Y')):
+    
+    if year != time.strftime('%Y'):
+        year = [2017, 2018, 2019, 2020, 2021, 2022]
+
+        for yearEle in year:
+            cursor = settings.cnx.cursor()
+            
+            print(yearEle)
+            findRevenue = ("""SELECT sum(CHIFFRE_AFFAIRE_MENSUEL) as CHIFFRE_AFFAIRE_ANNUEL FROM CHIFFRES_AFFAIRE WHERE ANNEE=%s;""" % (yearEle))
+
+            cursor.execute(findRevenue)
+
+            findYear = cursor.fetchall()
+            
+
+            if findYear == None:
+                return None
+
+            print(findYear)
+    else:
+        cursor = settings.cnx.cursor()
+                
+        print(year)
+        findRevenue = ("""SELECT sum(CHIFFRE_AFFAIRE_MENSUEL) as CHIFFRE_AFFAIRE_ANNUEL FROM CHIFFRES_AFFAIRE WHERE ANNEE=%s;""" % (year))
+
+        cursor.execute(findRevenue)
+
+        findYear = cursor.fetchall()
+        
+
+        if findYear == None:
+            return None
+
+        print(findYear)
 
 
+def getSalesRevenueMonthly(year):
+
+    
+    cursor = settings.cnx.cursor()
+
+    findRevenue = ("""SELECT MOIS, CHIFFRE_AFFAIRE_MENSUEL FROM CHIFFRES_AFFAIRE WHERE ANNEE = %s;""" % (year))
+
+    cursor.execute(findRevenue)
+
+    findMonthly = cursor.fetchall()
+    
+
+    if findMonthly == None:
+        return None
+
+    print(findMonthly)
+
+
+def getSalesRevenueByCountry():
+
+    
+    cursor = settings.cnx.cursor()
+
+    findRevenue = ("""SELECT * FROM TOTAL_ORDER_PER_COUNTRY;""")
+
+    cursor.execute(findRevenue)
+
+    findMonthly = cursor.fetchall()
+    
+
+    if findMonthly == None:
+        return None
+
+    print(findMonthly)

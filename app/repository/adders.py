@@ -37,7 +37,13 @@ def subscribeCustomer(Name, Surname, billing_add_Street,billing_add_Number, bill
     'password' : password,
     }
 
-    cursor.execute(query, data_user)
+
+    try:
+        cursor.execute(query, data_user)
+    except:
+        print("\nIssue of login")
+        return False
+
     ID_user = cursor.lastrowid
 
     query1 = ("INSERT INTO Customer"
@@ -333,7 +339,7 @@ def addOrderDetailToOrder(userID, preFab = False, date = time.strftime('%Y-%m-%d
 
     #settings.cnx.close()
 
-    
+
 
 
 def returnShoes(specificationId, userId, orderNumber):
@@ -444,4 +450,44 @@ def sendOrders(userId, servicePorviderId):
     cursor.close()
 
 
+
+def addPromotion(name, start_date, end_date, rate = 0, amount = 0):
+
+    cursor = settings.cnx.cursor()
+
+    if rate == 0:
+        query0 = ("INSERT INTO Promotion"
+               "(Percentage_amount, Pro_Name, Pro_Start_date, Pro_End_date)"
+               "VALUES (%(Percentage_amount)s, %(Pro_Name)s,  %(Pro_Start_date)s,  %(Pro_End_date)s)")
+        data_cart = {
+        'Percentage_amount' : amount,
+        'Pro_Name' : name,
+        'Pro_Start_date': start_date,
+        'Pro_End_date' : end_date
+        }
+    
+    
+    else:
+        query0 = ("INSERT INTO Promotion"
+               "(Percentage_rate, Pro_Name, Pro_Start_date, Pro_End_date)"
+               "VALUES (%(Percentage_rate)s, %(Pro_Name)s,  %(Pro_Start_date)s,  %(Pro_End_date)s)")
+        data_cart = {
+        'Percentage_rate' : rate,
+        'Pro_Name' : name,
+        'Pro_Start_date': start_date,
+        'Pro_End_date' : end_date
+        }
+
+    
+    try:
+        cursor.execute(query0, data_cart)
+    except Exception as e:
+        print(e)
+        print("trigger activated")
+
+    
+
+    settings.cnx.commit()
+
+    cursor.close()
     

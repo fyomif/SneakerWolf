@@ -66,6 +66,7 @@ def changeNewInfo(extractedUserInfo):
             extractedUserInfoCopy[0][2] = input("enter new surname: ")
         elif choice == 3:
             choiceBilling = input("Press 1 to change Country , press 2 to change City\npress 3 to change Postal Code, press 4 to change Street\npress 5 to number: ")
+            choiceBilling = int(choiceBilling)
             if choiceBilling == 1:
                 extractedUserInfoCopy[0][7] =  input("enter new country: ")
             elif choiceBilling == 2:
@@ -78,6 +79,7 @@ def changeNewInfo(extractedUserInfo):
                 extractedUserInfoCopy[0][4] =  input("enter new number: ")
         elif choice == 4:
             choiceDelivery = input("Press 1 to change Country , press 2 to change City\npress 3 to change Postal Code, press 4 to change Street\npress 5 to number: ")
+            choiceDelivery = int(choiceDelivery)
             if choiceDelivery == 1:
                 extractedUserInfoCopy[0][12] =  input("enter new country: ")
             elif choiceDelivery == 2:
@@ -90,6 +92,7 @@ def changeNewInfo(extractedUserInfo):
                 extractedUserInfoCopy[0][9] =  input("enter new number: ")
         elif choice == 5 and customer == False:
             choiceEmployee = input("Press 1 to change Title , press 2 to change departement Id\npress 3 to change your supervisor: ")
+            choiceEmployee = int(choiceEmployee)
             if choiceEmployee == 1:
                 extractedUserInfoCopy[1][4] = input("enter your new title, I hope it was a promotion!: ")
             elif choiceEmployee == 2:
@@ -99,15 +102,17 @@ def changeNewInfo(extractedUserInfo):
         elif choice == 5 and customer == True:
             extractedUserInfoCopy[1][1] = input("Please enter 1 if you would like to become VIP or 0 to unsubsribe ")
         elif choice == 6:
-            usernameEntry = input("please enter username (cap sensitive): ")
+            usernameEntry = input("please enter email : ")
             passwordEntry = input("and now you password: ")
             confirmation = input("Are you sure? Yes/No ")
             if confirmation == "yes" or confirmation == "Yes":
-                userInfo = obs.getUserByUsernamePassword(usernameEntry, passwordEntry)
+                userInfo = obs.getUserByEmailPassword(usernameEntry, passwordEntry)
+                #print(userInfo)
                 if userInfo != None:
                     upd.unsubrsibeUser(userInfo[0][0])
+                    return "unsub"
                 else:
-                    print("wrong password nice try. ")
+                    print("wrong password or email, nice try. ")
 
     upd.updateUserInfo(extractedUserInfoCopy[0])
 

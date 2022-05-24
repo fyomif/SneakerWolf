@@ -812,13 +812,14 @@ def generateOldSales():
             ads.createDetail(randomAmount, randomShoe, randomUser)
 
             monthInt = str(j) 
+            print(monthInt)
             if len(monthInt) == 1:
                 month = "0"+monthInt
                 ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, month))
                 setToSale(randomShoe, randomStore, randomAmount, "%s-%s-05"%(year, month))
             else:
-                ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, month))
-                setToSale(randomShoe, randomStore, randomAmount, "%s-%s-05"%(year, month))
+                ads.addOrderDetailToOrder(2, True, "%s-%s-05"%(year, monthInt))
+                setToSale(randomShoe, randomStore, randomAmount, "%s-%s-05"%(year, monthInt))
 
 
         ads.createDetail(1, 28, 1)

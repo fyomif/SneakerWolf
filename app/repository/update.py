@@ -6,10 +6,11 @@ DELETE PERSONAL INFORMATION
 """
 
 def unsubrsibeUser(userID):
-    userID = str(userID)
+    
+
     cursor = settings.cnx.cursor()
-    update_user = ("""UPDATE User SET Name = 'unsubscribed', Surname = 'unsubscribed', billing_add_Street = 'unsubscribed',billing_add_Number = 0,  billing_add_Postal_code = 'unsubscribed', billing_add_City = 'unsubscribed' ,billing_add_Country = 'unsubscribed', delivery_add_Street = 'unsubscribed',  delivery_add_Number = 0, delivery_add_Postal_code = 'unsubscribed', delivery_add_City = 'unsubscribed', delivery_add_Country = 'unsubscribed', username = 'unsubscribed', password = 'unsubscribed'
-                      WHERE ID = %s""" % (userID))
+    update_user = ("""UPDATE User SET Name = 'unsubscribed', Surname = 'unsubscribed', billing_add_Street = 'unsubscribed',billing_add_Number = 0,  billing_add_Postal_code = 'unsubscribed', billing_add_City = 'unsubscribed' , delivery_add_Street = 'unsubscribed',  delivery_add_Number = 0, delivery_add_Postal_code = 'unsubscribed', delivery_add_City = 'unsubscribed' , email = %s, password = 'unsubscribed'
+                      WHERE ID = %s""" % (userID, userID))
 
     cursor.execute(update_user)
 
@@ -20,7 +21,7 @@ def unsubrsibeUser(userID):
 
 def updateStockWarehouse(warehouseInfo, quantity):
     cursor = settings.cnx.cursor()
-    print(warehouseInfo)
+
     info_warehouse_quantity = ("""SELECT Quantity FROM To_stock
                                 WHERE ID = %s
                                 AND T_S_ID = %s""" % (warehouseInfo[1][1], warehouseInfo[0]))
